@@ -1,4 +1,5 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { AnalyticsCharts } from "@/components/analytics/analytics-charts";
 
 export default function AnalyticsPage() {
   return (
@@ -10,11 +11,7 @@ export default function AnalyticsPage() {
             View detailed insights about your reviews and ratings.
           </p>
         </div>
-        <div className="flex items-center justify-center h-[400px] border rounded-lg border-dashed">
-          <p className="text-muted-foreground">
-            Analytics charts coming soon...
-          </p>
-        </div>
+        <AnalyticsCharts />
       </div>
     </DashboardLayout>
   );

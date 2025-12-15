@@ -9,6 +9,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Layers,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -26,6 +27,11 @@ const sidebarItems = [
     title: "Analytics",
     href: "/analytics",
     icon: BarChart3,
+  },
+  {
+    title: "Integrations",
+    href: "/integrations",
+    icon: Layers,
   },
   {
     title: "Settings",

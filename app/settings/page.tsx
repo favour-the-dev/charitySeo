@@ -1,4 +1,5 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { SettingsForm } from "@/components/settings/settings-form";
 
 export default function SettingsPage() {
   return (
@@ -10,9 +11,7 @@ export default function SettingsPage() {
             Manage your dashboard preferences.
           </p>
         </div>
-        <div className="flex items-center justify-center h-[400px] border rounded-lg border-dashed">
-          <p className="text-muted-foreground">Settings coming soon...</p>
-        </div>
+        <SettingsForm />
       </div>
     </DashboardLayout>
   );
