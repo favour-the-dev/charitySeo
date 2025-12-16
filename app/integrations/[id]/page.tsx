@@ -74,19 +74,31 @@ export default function IntegrationDetailPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-8 max-w-5xl mx-auto w-full">
         {/* Header */}
-        <div className="flex items-start gap-6">
+        <div className="flex flex-col md:flex-row items-start gap-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.push("/integrations")}
-            className="mt-1"
+            className="mt-1 hidden md:flex"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
 
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="relative h-12 w-12">
+          <div className="flex items-center gap-2 md:hidden mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/integrations")}
+              className="-ml-2"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+          </div>
+
+          <div className="flex-1 w-full">
+            <div className="flex items-center gap-4 mb-4 md:mb-2">
+              <div className="relative h-16 w-16 md:h-12 md:w-12 shrink-0">
                 <Image
                   src={integration.image}
                   alt={integration.name}
@@ -94,11 +106,11 @@ export default function IntegrationDetailPage() {
                   className="object-contain"
                 />
               </div>
-              <h1 className="text-3xl font-bold tracking-tight">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
                 {integration.name}
               </h1>
             </div>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base md:text-lg">
               {integration.description}
             </p>
           </div>
@@ -107,7 +119,7 @@ export default function IntegrationDetailPage() {
             size="lg"
             onClick={handleConnect}
             disabled={isConnecting}
-            className="gap-2"
+            className="gap-2 w-full md:w-auto"
           >
             {isConnecting ? (
               <>
@@ -153,14 +165,16 @@ export default function IntegrationDetailPage() {
             <div className="grid gap-4">
               {accounts.map((account) => (
                 <Card key={account.id}>
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                  <CardContent className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 gap-4">
+                    <div className="flex items-start md:items-center gap-4 w-full md:w-auto">
+                      <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center shrink-0">
                         <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-500" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold">{account.name}</h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className="font-semibold truncate">
+                            {account.name}
+                          </h4>
                           {account.active ? (
                             <Badge
                               variant="default"
@@ -174,14 +188,20 @@ export default function IntegrationDetailPage() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {account.email} • Connected on{" "}
+                        <p className="text-sm text-muted-foreground truncate">
+                          {account.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground md:hidden mt-1">
+                          Connected:{" "}
                           {new Date(account.dateConnected).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center justify-between w-full md:w-auto gap-6 pl-14 md:pl-0">
+                      <div className="hidden md:block text-sm text-muted-foreground mr-4">
+                        {new Date(account.dateConnected).toLocaleDateString()}
+                      </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-muted-foreground">
                           {account.active ? "Syncing" : "Paused"}

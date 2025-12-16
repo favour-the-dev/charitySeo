@@ -27,7 +27,7 @@ export default function IntegrationsPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {integrations.map((integration) => {
             const isConnected =
               (connectedAccounts[integration.id]?.length || 0) > 0;
@@ -39,7 +39,7 @@ export default function IntegrationsPage() {
               >
                 <Card className="h-full overflow-hidden transition-all hover:shadow-md group cursor-pointer border-2 hover:border-primary/20">
                   <div className="relative h-40 w-full bg-muted/30 flex items-center justify-center p-6">
-                    <div className="relative h-24 w-24 transition-opacity duration-300 opacity-70 group-hover:opacity-100">
+                    <div className="relative h-24 w-24 transition-opacity duration-300 opacity-50 grayscale group-hover:opacity-100 group-hover:grayscale-0">
                       <Image
                         src={integration.image}
                         alt={integration.name}

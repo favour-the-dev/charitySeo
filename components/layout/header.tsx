@@ -42,17 +42,19 @@ export function Header() {
           <Sidebar onNavigate={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
-      <div className="flex-1">
+      <div className="flex-1 flex items-center overflow-hidden">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
-              className="w-[200px] justify-between"
+              className="w-auto max-w-[200px] justify-between px-2 md:px-4"
             >
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                <span className="truncate">{activeWorkspace}</span>
+              <div className="flex items-center gap-2 truncate">
+                <Building2 className="h-4 w-4 shrink-0" />
+                <span className="truncate hidden sm:inline">
+                  {activeWorkspace}
+                </span>
               </div>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
