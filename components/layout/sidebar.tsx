@@ -15,7 +15,7 @@ import {
 const sidebarItems = [
   {
     title: "Overview",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -57,7 +57,7 @@ export function Sidebar({ className, onNavigate, ...props }: SidebarProps) {
     >
       <div className="flex h-14 items-center border-b px-6">
         <Link
-          href="/"
+          href="/dashboard"
           className="flex items-center gap-2 font-semibold"
           onClick={onNavigate}
         >

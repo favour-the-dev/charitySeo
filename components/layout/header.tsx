@@ -21,19 +21,22 @@ import {
   ChevronsUpDown,
   Check,
   Plus,
+  Globe,
 } from "lucide-react";
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState("CharitySEO HQ");
+  const [language, setLanguage] = useState("English");
 
   const workspaces = ["CharitySEO HQ", "Marketing Team", "Support Ops"];
+  const languages = ["English", "Spanish", "French", "German"];
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
+    <header className="flex h-14 items-center gap-3 sm:gap-4 border-b bg-background px-4 sm:px-6">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button variant="ghost" size="icon" className="md:hidden shrink-0">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </Button>
@@ -42,13 +45,13 @@ export function Header() {
           <Sidebar onNavigate={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
-      <div className="flex-1 flex items-center overflow-hidden">
+      <div className="flex-1 flex items-center min-w-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
-              className="w-auto max-w-[200px] justify-between px-2 md:px-4"
+              className="w-auto max-w-[180px] sm:max-w-[200px] justify-between px-2 md:px-4 min-w-0"
             >
               <div className="flex items-center gap-2 truncate">
                 <Building2 className="h-4 w-4 shrink-0" />
@@ -86,13 +89,37 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="ml-2 flex items-center gap-2 sm:gap-4 shrink-0">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Globe className="h-5 w-5" />
+              <span className="sr-only">Switch Language</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Language</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {languages.map((lang) => (
+              <DropdownMenuItem
+                key={lang}
+                onSelect={() => setLanguage(lang)}
+                className="gap-2"
+              >
+                <div className="flex h-4 w-4 items-center justify-center">
+                  {language === lang && <Check className="h-4 w-4" />}
+                </div>
+                {lang}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button variant="ghost" size="icon">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>
         </Button>
         <ModeToggle />
-        <Avatar>
+        <Avatar className="h-8 w-8">
           <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
