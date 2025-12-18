@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Layers,
+  Zap,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -32,6 +33,11 @@ const sidebarItems = [
     title: "Integrations",
     href: "/integrations",
     icon: Layers,
+  },
+  {
+    title: "Automations",
+    href: "/automations",
+    icon: Zap,
   },
   {
     title: "Settings",
