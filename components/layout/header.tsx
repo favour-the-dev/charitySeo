@@ -84,7 +84,13 @@ export function Header() {
               <div className="flex h-4 w-4 items-center justify-center">
                 <Plus className="h-4 w-4" />
               </div>
-              Create New...
+              Create New Workspace
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2">
+              <div className="flex h-4 w-4 items-center justify-center">
+                <Plus className="h-4 w-4" />
+              </div>
+              Add Team Members
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

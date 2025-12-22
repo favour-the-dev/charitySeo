@@ -11,6 +11,7 @@ import {
   LogOut,
   Layers,
   Zap,
+  Bot,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -18,6 +19,11 @@ const sidebarItems = [
     title: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "AI Agents",
+    href: "/agents",
+    icon: Bot,
   },
   {
     title: "Reviews",
