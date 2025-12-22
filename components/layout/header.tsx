@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,13 +22,23 @@ import {
   Plus,
   Globe,
 } from "lucide-react";
+import Link from "next/link";
+import { useWorkspaceStore } from "@/lib/workspace-store";
+import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-modal";
+import { CreateTeamMemberModal } from "@/components/workspaces/create-team-member-modal";
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const [activeWorkspace, setActiveWorkspace] = useState("CharitySEO HQ");
+  const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
+  const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+
+  const { workspaces, activeWorkspaceId, setActiveWorkspace } =
+    useWorkspaceStore();
+  const activeWorkspace =
+    workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
+
   const [language, setLanguage] = useState("English");
 
-  const workspaces = ["CharitySEO HQ", "Marketing Team", "Support Ops"];
   const languages = ["English", "Spanish", "French", "German"];
 
   return (
@@ -56,45 +65,77 @@ export function Header() {
               <div className="flex items-center gap-2 truncate">
                 <Building2 className="h-4 w-4 shrink-0" />
                 <span className="truncate hidden sm:inline">
-                  {activeWorkspace}
+                  {activeWorkspace?.name}
                 </span>
               </div>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[200px]">
+          <DropdownMenuContent className="w-[300px]">
             <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {workspaces.map((workspace) => (
               <DropdownMenuItem
-                key={workspace}
-                onSelect={() => setActiveWorkspace(workspace)}
+                key={workspace.id}
+                onSelect={() => setActiveWorkspace(workspace.id)}
                 className="gap-2"
               >
                 <div className="flex h-4 w-4 items-center justify-center">
-                  {activeWorkspace === workspace && (
+                  {activeWorkspace?.id === workspace.id && (
                     <Check className="h-4 w-4" />
                   )}
                 </div>
-                {workspace}
+                {workspace.name}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2">
+            <DropdownMenuItem
+              className="gap-2"
+              onSelect={(e) => {
+                e.preventDefault();
+                setIsCreateWorkspaceOpen(true);
+              }}
+            >
               <div className="flex h-4 w-4 items-center justify-center">
                 <Plus className="h-4 w-4" />
               </div>
               Create New Workspace
             </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2">
+            <DropdownMenuItem
+              className="gap-2"
+              onSelect={(e) => {
+                e.preventDefault();
+                setIsAddMemberOpen(true);
+              }}
+            >
               <div className="flex h-4 w-4 items-center justify-center">
                 <Plus className="h-4 w-4" />
               </div>
               Add Team Members
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link
+                href="/settings?tab=workspaces"
+                className="w-full cursor-pointer"
+              >
+                View All
+              </Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <CreateWorkspaceModal
+        open={isCreateWorkspaceOpen}
+        onOpenChange={setIsCreateWorkspaceOpen}
+      />
+
+      <CreateTeamMemberModal
+        open={isAddMemberOpen}
+        onOpenChange={setIsAddMemberOpen}
+      />
+
       <div className="ml-2 flex items-center gap-2 sm:gap-4 shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
