@@ -101,7 +101,7 @@ export function Header() {
               </div>
               Create New Workspace
             </DropdownMenuItem>
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               className="gap-2"
               onSelect={(e) => {
                 e.preventDefault();
@@ -112,7 +112,7 @@ export function Header() {
                 <Plus className="h-4 w-4" />
               </div>
               Add Team Members
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link

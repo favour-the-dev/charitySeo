@@ -21,6 +21,21 @@ import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-m
 import { CreateTeamMemberModal } from "@/components/workspaces/create-team-member-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Users } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function SettingsPageComponent() {
   const searchParams = useSearchParams();
@@ -30,10 +45,35 @@ export default function SettingsPageComponent() {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   const { workspaces } = useWorkspaceStore();
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(
+    workspaces[0]?.id || ""
+  );
+
+  // Password Change State
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   const handleSave = () => {
     toast.success("Settings saved successfully!");
   };
+
+  const handlePasswordChange = () => {
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (!newPassword) {
+      toast.error("Password cannot be empty");
+      return;
+    }
+    // Simulate API call
+    toast.success("Password changed successfully!");
+    setNewPassword("");
+    setConfirmNewPassword("");
+  };
+
+  const selectedWorkspace =
+    workspaces.find((w) => w.id === selectedWorkspaceId) || workspaces[0];
 
   return (
     <DashboardLayout>
@@ -53,8 +93,8 @@ export default function SettingsPageComponent() {
           <TabsList>
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="workspaces">Workspaces</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="appearance">Appearance</TabsTrigger>
+            <TabsTrigger value="password">Change Password</TabsTrigger>
+            <TabsTrigger value="team-members">Team Members</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">
@@ -170,83 +210,116 @@ export default function SettingsPageComponent() {
             </div>
           </TabsContent>
 
-          <TabsContent value="notifications" className="space-y-4">
+          <TabsContent value="password" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>
-                  Choose what you want to be notified about.
-                </CardDescription>
+                <CardTitle>Change Password</CardTitle>
+                <CardDescription>Update your password.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between space-x-2">
-                  <Label
-                    htmlFor="new-reviews"
-                    className="flex flex-col space-y-1"
-                  >
-                    <span>New Reviews</span>
-                    <span className="font-normal text-xs text-muted-foreground">
-                      Receive notifications when a new review is posted.
-                    </span>
-                  </Label>
-                  <Switch id="new-reviews" defaultChecked />
+                <div className="grid gap-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
                 </div>
-                <div className="flex items-center justify-between space-x-2">
-                  <Label
-                    htmlFor="weekly-digest"
-                    className="flex flex-col space-y-1"
-                  >
-                    <span>Weekly Digest</span>
-                    <span className="font-normal text-xs text-muted-foreground">
-                      Get a weekly summary of your review performance.
-                    </span>
-                  </Label>
-                  <Switch id="weekly-digest" defaultChecked />
-                </div>
-                <div className="flex items-center justify-between space-x-2">
-                  <Label
-                    htmlFor="marketing"
-                    className="flex flex-col space-y-1"
-                  >
-                    <span>Marketing Emails</span>
-                    <span className="font-normal text-xs text-muted-foreground">
-                      Receive emails about new features and updates.
-                    </span>
-                  </Label>
-                  <Switch id="marketing" />
+                <div className="grid gap-2">
+                  <Label htmlFor="confirm-password">Confirm New Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  />
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSave}>Save Preferences</Button>
+                <Button onClick={handlePasswordChange}>Update Password</Button>
               </CardFooter>
             </Card>
           </TabsContent>
 
-          <TabsContent value="appearance" className="space-y-4">
+          <TabsContent value="team-members" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Appearance</CardTitle>
+                <CardTitle>Team Members</CardTitle>
                 <CardDescription>
-                  Customize the look and feel of the dashboard.
+                  Manage members within a specific workspace.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between space-x-2">
-                  <Label
-                    htmlFor="compact-mode"
-                    className="flex flex-col space-y-1"
-                  >
-                    <span>Compact Mode</span>
-                    <span className="font-normal text-xs text-muted-foreground">
-                      Reduce the spacing between elements.
-                    </span>
-                  </Label>
-                  <Switch id="compact-mode" />
+                <div className="flex items-center justify-between">
+                  <div className="w-[300px]">
+                    <Label htmlFor="workspace-select" className="mb-2 block">
+                      Select Workspace
+                    </Label>
+                    <Select
+                      value={selectedWorkspaceId}
+                      onValueChange={setSelectedWorkspaceId}
+                    >
+                      <SelectTrigger id="workspace-select">
+                        <SelectValue placeholder="Select a workspace" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {workspaces.map((ws) => (
+                          <SelectItem key={ws.id} value={ws.id}>
+                            {ws.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={() => setIsAddMemberOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Team Member
+                  </Button>
+                </div>
+
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedWorkspace?.members.map((member) => (
+                        <TableRow key={member.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback>
+                                  {member.firstName[0]}
+                                  {member.lastName[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              {member.firstName} {member.lastName}
+                            </div>
+                          </TableCell>
+                          <TableCell>{member.email}</TableCell>
+                          <TableCell>{member.role}</TableCell>
+                        </TableRow>
+                      ))}
+                      {(!selectedWorkspace?.members ||
+                        selectedWorkspace.members.length === 0) && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={3}
+                            className="text-center h-24 text-muted-foreground"
+                          >
+                            No members found in this workspace.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button onClick={handleSave}>Save Changes</Button>
-              </CardFooter>
             </Card>
           </TabsContent>
         </Tabs>

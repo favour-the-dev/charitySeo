@@ -12,6 +12,7 @@ import {
   Layers,
   Zap,
   Bot,
+  Users,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -44,6 +45,11 @@ const sidebarItems = [
     title: "Automations",
     href: "/automations",
     icon: Zap,
+  },
+  {
+    title: "Sellers",
+    href: "/sellers",
+    icon: Users,
   },
   {
     title: "Settings",
