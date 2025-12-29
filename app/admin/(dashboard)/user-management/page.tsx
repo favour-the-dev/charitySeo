@@ -14,7 +14,7 @@ export default function UserManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-3 md:items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
         <Button onClick={() => setIsAddUserModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />

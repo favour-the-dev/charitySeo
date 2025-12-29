@@ -47,7 +47,7 @@ const sidebarItems = [
     icon: Zap,
   },
   {
-    title: "Sellers",
+    title: "Resellers",
     href: "/sellers",
     icon: Users,
   },

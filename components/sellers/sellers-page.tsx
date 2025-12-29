@@ -53,7 +53,7 @@ export function SellersPageComponent() {
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Sellers</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Resellers</h2>
             <p className="text-muted-foreground">
               Manage your resellers and view their performance.
             </p>

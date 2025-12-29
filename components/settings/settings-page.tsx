@@ -90,7 +90,7 @@ export default function SettingsPageComponent() {
           onValueChange={setActiveTab}
           className="space-y-4"
         >
-          <TabsList>
+          <TabsList className="w-full h-full grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 text-center">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="workspaces">Workspaces</TabsTrigger>
             <TabsTrigger value="password">Change Password</TabsTrigger>

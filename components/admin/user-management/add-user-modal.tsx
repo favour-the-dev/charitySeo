@@ -96,7 +96,7 @@ export function AddUserModal({ isOpen, onClose, user }: AddUserModalProps) {
           </DialogDescription>
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
             {isEditMode && (
