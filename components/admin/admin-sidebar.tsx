@@ -19,7 +19,12 @@ const sidebarItems = [
   },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  className?: string;
+  onNavigate?: () => void;
+}
+
+export function AdminSidebar({ className, onNavigate }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -29,11 +34,14 @@ export function AdminSidebar() {
   };
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-card">
+    <div
+      className={cn("flex h-full w-64 flex-col border-r bg-card", className)}
+    >
       <div className="flex h-14 items-center border-b px-6">
         <Link
           href="/admin/user-management"
           className="flex items-center gap-2 font-semibold"
+          onClick={onNavigate}
         >
           <ShieldCheck className="h-6 w-6 text-primary" />
           <span>Admin Panel</span>
@@ -45,6 +53,7 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
                 pathname === item.href

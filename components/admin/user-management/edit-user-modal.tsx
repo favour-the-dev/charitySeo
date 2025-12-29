@@ -20,21 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
+import { User } from "./add-user-modal"; // Import User type
 
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: "Member" | "Admin";
-  status: "Active" | "Inactive";
-  subscriptions: Record<string, "Active" | "Inactive">;
-};
-
-interface AddUserModalProps {
+interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user?: User | null; // If provided, we are in Edit mode
+  user: User | null;
 }
 
 const SUBSCRIPTIONS = [
@@ -47,28 +38,23 @@ const SUBSCRIPTIONS = [
   "CharitySEO Reseller",
 ];
 
-export function AddUserModal({ isOpen, onClose, user }: AddUserModalProps) {
-  const isEditMode = !!user;
+export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
   const [activeTab, setActiveTab] = useState("details");
-
   const [formData, setFormData] = useState<
     Partial<User> & { password?: string; confirmPassword?: string }
   >({
-    name: "",
-    email: "",
-    role: "Member",
-    status: "Active",
-    subscriptions: SUBSCRIPTIONS.reduce(
-      (acc, sub) => ({ ...acc, [sub]: "Inactive" }),
-      {}
-    ),
+    name: user ? user.name : "",
+    email: user ? user.email : "",
+    role: user ? user.role : "Member",
+    status: user ? user.status : "Active",
+    subscriptions: user ? user.subscriptions : {},
     password: "",
     confirmPassword: "",
   });
 
   const handleSave = () => {
     // Handle save logic here
-    console.log("Saving user:", formData);
+    console.log("Updating user:", formData);
     onClose();
   };
 
@@ -82,30 +68,26 @@ export function AddUserModal({ isOpen, onClose, user }: AddUserModalProps) {
     }));
   };
 
+  if (!user) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Edit User Account" : "Add User Account"}
-          </DialogTitle>
+          <DialogTitle>Edit User Account</DialogTitle>
           <DialogDescription>
-            {isEditMode
-              ? "Make changes to the user account here."
-              : "Create a new user account."}
+            Make changes to the user account here.
           </DialogDescription>
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-            {isEditMode && (
-              <TabsTrigger value="password">Update Password</TabsTrigger>
-            )}
+            <TabsTrigger value="password">Update Password</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details" className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
@@ -161,35 +143,6 @@ export function AddUserModal({ isOpen, onClose, user }: AddUserModalProps) {
                   </SelectContent>
                 </Select>
               </div>
-              {!isEditMode && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </>
-              )}
             </div>
           </TabsContent>
 
@@ -227,35 +180,30 @@ export function AddUserModal({ isOpen, onClose, user }: AddUserModalProps) {
             </div>
           </TabsContent>
 
-          {isEditMode && (
-            <TabsContent value="password" className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmNewPassword">Confirm Password</Label>
-                <Input
-                  id="confirmNewPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </TabsContent>
-          )}
+          <TabsContent value="password" className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmNewPassword">Confirm Password</Label>
+              <Input
+                id="confirmNewPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
+              />
+            </div>
+          </TabsContent>
         </Tabs>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>

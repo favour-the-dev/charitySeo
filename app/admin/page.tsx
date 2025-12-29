@@ -44,6 +44,7 @@ export default function AdminLoginPage() {
             <Input
               id="email"
               type="email"
+              value={"admin@charityseo.com"}
               placeholder="admin@charityseo.com"
               required
             />
@@ -52,7 +53,7 @@ export default function AdminLoginPage() {
             <div className="flex items-center">
               <Label htmlFor="password">Password</Label>
             </div>
-            <Input id="password" type="password" required />
+            <Input id="password" type="password" value={"test1234"} required />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}

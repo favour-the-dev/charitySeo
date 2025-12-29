@@ -20,7 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit, Trash, LogIn, Eye } from "lucide-react";
-import { AddUserModal, User } from "./add-user-modal";
+import { User } from "./add-user-modal";
+import { EditUserModal } from "./edit-user-modal";
 import {
   Dialog,
   DialogContent,
@@ -175,7 +176,7 @@ export function UsersTable({ searchQuery = "" }: UsersTableProps) {
         </Table>
       </div>
 
-      <AddUserModal
+      <EditUserModal
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
@@ -185,7 +186,7 @@ export function UsersTable({ searchQuery = "" }: UsersTableProps) {
       />
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
@@ -209,7 +210,7 @@ export function UsersTable({ searchQuery = "" }: UsersTableProps) {
       </Dialog>
 
       <Dialog open={isSubsModalOpen} onOpenChange={setIsSubsModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Active Subscriptions</DialogTitle>
             <DialogDescription>
