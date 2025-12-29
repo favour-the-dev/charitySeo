@@ -146,7 +146,7 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
           </TabsContent>
 
           <TabsContent value="subscriptions" className="space-y-4 py-4">
-            <div className="space-y-4">
+            <div className="space-y-4 p-4 h-[300px] overflow-y-auto">
               {SUBSCRIPTIONS.map((sub) => (
                 <div
                   key={sub}

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

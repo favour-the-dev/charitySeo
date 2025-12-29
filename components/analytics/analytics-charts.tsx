@@ -1,6 +1,5 @@
-"use client"
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+"use client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart,
   Line,
@@ -14,7 +13,7 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts"
+} from "recharts";
 
 const reviewsOverTimeData = [
   { name: "Jan", reviews: 40 },
@@ -24,7 +23,7 @@ const reviewsOverTimeData = [
   { name: "May", reviews: 18 },
   { name: "Jun", reviews: 23 },
   { name: "Jul", reviews: 34 },
-]
+];
 
 const ratingDistributionData = [
   { name: "5 Stars", count: 120 },
@@ -32,15 +31,15 @@ const ratingDistributionData = [
   { name: "3 Stars", count: 40 },
   { name: "2 Stars", count: 20 },
   { name: "1 Star", count: 10 },
-]
+];
 
 const sentimentData = [
   { name: "Positive", value: 70 },
   { name: "Neutral", value: 20 },
   { name: "Negative", value: 10 },
-]
+];
 
-const COLORS = ["#22c55e", "#eab308", "#ef4444"]
+const COLORS = ["#22c55e", "#eab308", "#ef4444"];
 
 export function AnalyticsCharts() {
   return (
@@ -118,7 +117,10 @@ export function AnalyticsCharts() {
                 dataKey="value"
               >
                 {sentimentData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -131,12 +133,14 @@ export function AnalyticsCharts() {
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: COLORS[index] }}
                 />
-                <span className="text-sm text-muted-foreground">{entry.name}</span>
+                <span className="text-sm text-muted-foreground">
+                  {entry.name}
+                </span>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

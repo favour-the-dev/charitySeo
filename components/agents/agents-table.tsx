@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Table,
   TableBody,
@@ -75,7 +74,7 @@ export function AgentsTable({ searchQuery = "" }: { searchQuery?: string }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {agents.map((agent) => (
+          {filteredAgents.map((agent) => (
             <TableRow key={agent.id}>
               <TableCell className="font-medium">{agent.name}</TableCell>
               <TableCell>{agent.group}</TableCell>

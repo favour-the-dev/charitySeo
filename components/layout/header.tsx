@@ -36,9 +36,7 @@ export function Header() {
     useWorkspaceStore();
   const activeWorkspace =
     workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
-
   const [language, setLanguage] = useState("English");
-
   const languages = ["English", "Spanish", "French", "German"];
 
   return (
@@ -101,18 +99,6 @@ export function Header() {
               </div>
               Create New Workspace
             </DropdownMenuItem>
-            {/* <DropdownMenuItem
-              className="gap-2"
-              onSelect={(e) => {
-                e.preventDefault();
-                setIsAddMemberOpen(true);
-              }}
-            >
-              <div className="flex h-4 w-4 items-center justify-center">
-                <Plus className="h-4 w-4" />
-              </div>
-              Add Team Members
-            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link
