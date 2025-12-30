@@ -77,6 +77,11 @@ export default function LoginPage() {
               Sign up
             </Link>
           </div>
+          <div className="text-center text-xs text-muted-foreground mt-2">
+            <Link href="/privacy-policy" className="hover:underline">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
       <div className="hidden bg-muted lg:block relative h-full">
