@@ -72,7 +72,7 @@ export function Header() {
               <div className="flex items-center gap-2 truncate">
                 <Building2 className="h-4 w-4 shrink-0" />
                 <span className="truncate hidden sm:inline">
-                  {activeWorkspace?.name}
+                  {activeWorkspace?.name} test
                 </span>
               </div>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
