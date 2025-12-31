@@ -59,7 +59,7 @@ export function AgentsTable({ searchQuery = "" }: { searchQuery?: string }) {
   );
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border mt-10">
       <Table>
         <TableHeader>
           <TableRow>

@@ -12,6 +12,7 @@ import {
   Zap,
   Bot,
   Users,
+  Crown,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -82,7 +83,7 @@ export function Sidebar({ className, onNavigate, ...props }: SidebarProps) {
         </Link>
       </div>
       <div className="flex-1 overflow-auto py-4">
-        <nav className="grid items-start px-4 text-sm font-medium">
+        <nav className="grid gap-2 items-start px-4 font-medium">
           {sidebarItems.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -97,12 +98,24 @@ export function Sidebar({ className, onNavigate, ...props }: SidebarProps) {
                     : "text-muted-foreground"
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-5 w-5" />
                 {item.title}
               </Link>
             );
           })}
         </nav>
+      </div>
+      {/* upgrade link */}
+      <div className="mt-auto py-2 px-4">
+        <Link href="/subscriptions">
+          <button
+            className="bg-primary text-secondary hover:bg-primary/90 flex w-full items-center justify-center gap-2 
+            rounded-lg px-3 py-2 transition-all cursor-pointer"
+          >
+            <Crown className="h-5 w-5" />
+            <span className="text-sm md:text-base font-semibold">Upgrade</span>
+          </button>
+        </Link>
       </div>
       <div className="mt-auto border-t p-4">
         <Link href="/login">
