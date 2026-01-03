@@ -147,3 +147,60 @@ export interface UserWorkspace {
   work_space_id: number;
   workspace: Workspace;
 }
+
+interface ActiveWorkspace {
+  id: number;
+  user_id: number;
+  name: string;
+  slug: string;
+  is_default: boolean;
+  logo: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SubscriptionDetails {
+  end_date: string;
+  id: string;
+  limit: number;
+  name: string;
+  start_date: string;
+  status: boolean;
+  type: string;
+}
+
+interface Subscriptions {
+  front_end: SubscriptionDetails;
+  reseller: SubscriptionDetails;
+  viralgenius_affiliate_offer: SubscriptionDetails;
+  viralgenius_agency: SubscriptionDetails;
+  viralgenius_media_studio: SubscriptionDetails;
+  viralgenius_sales_converter: SubscriptionDetails;
+  viralgenius_unlimited: SubscriptionDetails;
+  [key: string]: SubscriptionDetails; // For any additional subscription types
+}
+
+export interface TeamMemberType {
+  account_officer: string;
+  active_workspace: ActiveWorkspace;
+  added_by: string;
+  admin_id: number;
+  all_user_workspaces: UserWorkspace[];
+  created_at: string;
+  edit_access: boolean;
+  email: string;
+  email_verified_at: string | null;
+  first_name: string;
+  id: number;
+  is_active: number; // or boolean if you want to normalize it
+  last_name: string;
+  name: string;
+  parent_id: number;
+  parsed_role: string;
+  role: string;
+  subscriptions: Subscriptions;
+  token: string | null;
+  updated_at: string;
+  user_workspaces: number[];
+  uuid: string | null;
+}

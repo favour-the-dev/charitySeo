@@ -35,7 +35,7 @@ export function CreateTeamMemberModal({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<Role>("Client");
+  const [role, setRole] = useState<Role>("team_member");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<number[]>([]);
@@ -130,9 +130,8 @@ export function CreateTeamMemberModal({
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Client">Client</SelectItem>
-                <SelectItem value="Administrator">Administrator</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
+                <SelectItem value="team_member">Member</SelectItem>
+                <SelectItem value="super_admin">Admin</SelectItem>
               </SelectContent>
             </Select>
           </div>

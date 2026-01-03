@@ -9,7 +9,7 @@ import TeamMemberService, {
   CreateTeamMemberRequest,
   UpdateTeamMemberRequest,
 } from "@/services/TeamMember";
-import { UserWorkspace } from "@/types/types";
+import { UserWorkspace, TeamMemberType } from "@/types/types";
 
 export type Role = "Client" | "Administrator" | "Manager" | string;
 
@@ -123,9 +123,33 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await TeamMemberService.getAll();
-      const teamMembers = Array.isArray(response)
-        ? response
-        : response.data || [];
+      console.log("team member response", response);
+
+      let rawMembers: any[] = [];
+
+      if (Array.isArray(response)) {
+        rawMembers = response;
+      } else if (response.users && Array.isArray(response.users)) {
+        rawMembers = response.users;
+      } else if (response.data && Array.isArray(response.data)) {
+        rawMembers = response.data;
+      }
+
+      const teamMembers: TeamMember[] = rawMembers.map((m) => ({
+        id: m.id,
+        first_name: m.first_name,
+        last_name: m.last_name,
+        email: m.email,
+        role: m.role,
+        user_access:
+          m.user_access ||
+          m.all_user_workspaces?.map((ws: any) => ({
+            id: ws.work_space_id,
+            has_access: true,
+          })) ||
+          [],
+      }));
+
       set({ teamMembers });
     } catch (error) {
       console.error("Error fetching team members:", error);
