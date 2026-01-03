@@ -30,7 +30,7 @@ export function EditWorkspaceModal({
   const updateWorkspace = useWorkspaceStore((state) => state.updateWorkspace);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [isDefault, setIsDefault] = useState(false);
+  const [isDefault, setIsDefault] = useState(0);
 
   useEffect(() => {
     if (workspace) {
