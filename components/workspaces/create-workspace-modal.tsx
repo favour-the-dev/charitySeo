@@ -52,7 +52,8 @@ export function CreateWorkspaceModal({
       setName("");
       setSlug("");
       setLogo(null);
-      setIsDefault(false);
+      setIsDefaultState(false);
+      setIsDefault(0);
     } catch (error) {
       toast.error("Failed to create workspace");
     }
