@@ -107,7 +107,7 @@ export function Sidebar({ className, onNavigate, ...props }: SidebarProps) {
       </div>
       {/* upgrade link */}
       <div className="mt-auto py-2 px-4">
-        <Link href="/subscriptions">
+        <Link href="/subscription">
           <button
             className="bg-primary text-secondary hover:bg-primary/90 flex w-full items-center justify-center gap-2 
             rounded-lg px-3 py-2 transition-all cursor-pointer"
@@ -117,14 +117,14 @@ export function Sidebar({ className, onNavigate, ...props }: SidebarProps) {
           </button>
         </Link>
       </div>
-      <div className="mt-auto border-t p-4">
+      {/* <div className="mt-auto border-t p-4">
         <Link href="/login">
           <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:text-primary">
             <LogOut className="h-4 w-4" />
             Sign Out
           </button>
         </Link>
-      </div>
+      </div> */}
     </div>
   );
 }
