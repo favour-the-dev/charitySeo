@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Quote } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
+import AuthService from "@/services/Auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,12 +18,20 @@ export default function LoginPage() {
     event.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      await AuthService.login(email, password);
       toast.success("Logged in successfully");
       router.push("/dashboard");
-    }, 1000);
+    } catch (error) {
+      toast.error("Incorrect Credentials");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -40,6 +49,7 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="m@example.com"
                 required
@@ -58,6 +68,7 @@ export default function LoginPage() {
               </div>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 required
                 defaultValue="password"

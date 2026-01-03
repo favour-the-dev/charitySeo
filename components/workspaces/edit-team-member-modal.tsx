@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,35 +19,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useWorkspaceStore, Role } from "@/lib/workspace-store";
+import { TeamMember } from "@/services/TeamMember";
 import { toast } from "react-hot-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 
-interface CreateTeamMemberModalProps {
+interface EditTeamMemberModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  member: TeamMember | null;
 }
 
-export function CreateTeamMemberModal({
+export function EditTeamMemberModal({
   open,
   onOpenChange,
-}: CreateTeamMemberModalProps) {
-  const { workspaces, createTeamMember } = useWorkspaceStore();
+  member,
+}: EditTeamMemberModalProps) {
+  const { workspaces, updateTeamMember } = useWorkspaceStore();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("Client");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [selectedWorkspaces, setSelectedWorkspaces] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (member) {
+      setFirstName(member.first_name);
+      setLastName(member.last_name);
+      setEmail(member.email);
+      setRole(member.role);
+      // Pre-select workspaces where user has access
+      const accessIds =
+        member.user_access
+          ?.filter((access) => access.has_access)
+          .map((access) => access.id) || [];
+      setSelectedWorkspaces(accessIds);
+    }
+  }, [member]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName || !lastName || !email || !password) {
-      toast.error("All fields are required");
-      return;
-    }
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+    if (!member) return;
+    if (!firstName || !lastName || !email) {
+      toast.error("Name and Email are required");
       return;
     }
     if (selectedWorkspaces.length === 0) {
@@ -56,27 +70,24 @@ export function CreateTeamMemberModal({
     }
 
     try {
-      await createTeamMember({
+      await updateTeamMember({
+        id: member.id,
         first_name: firstName,
         last_name: lastName,
         email,
         role,
-        password,
-        user_access: selectedWorkspaces.map((id) => ({ id, has_access: true })),
+        password: password || undefined, // Only send if provided
+        user_access: workspaces.map((ws) => ({
+          id: ws.id,
+          has_access: selectedWorkspaces.includes(ws.id),
+        })),
       });
 
-      toast.success("Team member added successfully");
+      toast.success("Team member updated successfully");
       onOpenChange(false);
-      // Reset form
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setRole("Client");
-      setPassword("");
-      setConfirmPassword("");
-      setSelectedWorkspaces([]);
+      setPassword(""); // Clear password field
     } catch (error) {
-      toast.error("Failed to add team member");
+      toast.error("Failed to update team member");
     }
   };
 
@@ -90,38 +101,38 @@ export function CreateTeamMemberModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Team Member</DialogTitle>
+          <DialogTitle>Edit Team Member</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="edit-firstName">First Name</Label>
               <Input
-                id="firstName"
+                id="edit-firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="edit-lastName">Last Name</Label>
               <Input
-                id="lastName"
+                id="edit-lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
             </div>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="edit-email">Email</Label>
             <Input
-              id="email"
+              id="edit-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="role">Role</Label>
+            <Label htmlFor="edit-role">Role</Label>
             <Select
               value={role}
               onValueChange={(value) => setRole(value as Role)}
@@ -136,25 +147,15 @@ export function CreateTeamMemberModal({
               </SelectContent>
             </Select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="edit-password">New Password (Optional)</Label>
+            <Input
+              id="edit-password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Leave blank to keep current"
+            />
           </div>
           <div className="grid gap-2">
             <Label>Workspace Assignment</Label>
@@ -162,17 +163,17 @@ export function CreateTeamMemberModal({
               {workspaces.map((ws) => (
                 <div key={ws.id} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`ws-${ws.id}`}
+                    id={`edit-ws-${ws.id}`}
                     checked={selectedWorkspaces.includes(ws.id)}
                     onCheckedChange={() => toggleWorkspace(ws.id)}
                   />
-                  <Label htmlFor={`ws-${ws.id}`}>{ws.name}</Label>
+                  <Label htmlFor={`edit-ws-${ws.id}`}>{ws.name}</Label>
                 </div>
               ))}
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Add Member</Button>
+            <Button type="submit">Save Changes</Button>
           </DialogFooter>
         </form>
       </DialogContent>

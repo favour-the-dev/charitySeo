@@ -1,98 +1,185 @@
 import { create } from "zustand";
-import { nanoid } from "nanoid";
+import WorkspaceService, {
+  Workspace,
+  CreateWorkspaceRequest,
+  UpdateWorkspaceRequest,
+} from "@/services/Workspace";
+import TeamMemberService, {
+  TeamMember,
+  CreateTeamMemberRequest,
+  UpdateTeamMemberRequest,
+} from "@/services/TeamMember";
+import { UserWorkspace } from "@/types/types";
 
-export type Role = "Client" | "Administrator" | "Manager";
-
-export interface TeamMember {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: Role;
-  workspaceIds: string[];
-}
-
-export interface Workspace {
-  id: string;
-  name: string;
-  slug: string;
-  image?: string;
-  isDefault: boolean;
-  members: TeamMember[];
-}
+export type Role = "Client" | "Administrator" | "Manager" | string;
 
 interface WorkspaceState {
   workspaces: Workspace[];
-  activeWorkspaceId: string;
-  setActiveWorkspace: (id: string) => void;
-  addWorkspace: (workspace: Omit<Workspace, "id" | "members">) => void;
-  addTeamMember: (member: Omit<TeamMember, "id">) => void;
+  teamMembers: TeamMember[];
+  activeWorkspaceId: number | null;
+  isLoading: boolean;
+  error: string | null;
+
+  fetchWorkspaces: () => Promise<void>;
+  createWorkspace: (data: CreateWorkspaceRequest) => Promise<void>;
+  updateWorkspace: (data: UpdateWorkspaceRequest) => Promise<void>;
+  deleteWorkspace: (id: number) => Promise<void>;
+  setActiveWorkspace: (id: number) => void;
+
+  fetchTeamMembers: () => Promise<void>;
+  createTeamMember: (data: CreateTeamMemberRequest) => Promise<void>;
+  updateTeamMember: (data: UpdateTeamMemberRequest) => Promise<void>;
+  deleteTeamMember: (id: number) => Promise<void>;
 }
 
-const initialWorkspaces: Workspace[] = [
-  {
-    id: "1",
-    name: "CharitySEO HQ",
-    slug: "charityseo-hq",
-    isDefault: true,
-    members: [
-      {
-        id: "m1",
-        firstName: "John",
-        lastName: "Doe",
-        email: "john@charityseo.com",
-        role: "Administrator",
-        workspaceIds: ["1"],
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Marketing Team",
-    slug: "marketing-team",
-    isDefault: false,
-    members: [],
-  },
-  {
-    id: "3",
-    name: "Support Ops",
-    slug: "support-ops",
-    isDefault: false,
-    members: [],
-  },
-];
+export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
+  workspaces: [],
+  teamMembers: [],
+  activeWorkspaceId: null,
+  isLoading: false,
+  error: null,
 
-export const useWorkspaceStore = create<WorkspaceState>((set) => ({
-  workspaces: initialWorkspaces,
-  activeWorkspaceId: "1",
+  fetchWorkspaces: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await WorkspaceService.getAll();
+      console.log("workspaces", response);
+
+      // Map the userWorkspaces response to extract the actual workspace objects
+      const workspaces = response.userWorkspaces
+        ? response.userWorkspaces.map((item: UserWorkspace) => item.workspace)
+        : [];
+
+      set({ workspaces });
+
+      const currentActive = get().activeWorkspaceId;
+      if (!currentActive && workspaces.length > 0) {
+        // If the API returns a currentWorkspace, use that as default
+        if (response.currentWorkspace) {
+          set({ activeWorkspaceId: response.currentWorkspace.id });
+        } else {
+          set({ activeWorkspaceId: workspaces[0].id });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching workspaces:", error);
+      set({ error: (error as Error).message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  createWorkspace: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newWorkspace = await WorkspaceService.create(data);
+      set((state) => ({ workspaces: [...state.workspaces, newWorkspace] }));
+    } catch (error) {
+      console.error("Error creating workspace:", error);
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateWorkspace: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatedWorkspace = await WorkspaceService.update(data);
+      set((state) => ({
+        workspaces: state.workspaces.map((w) =>
+          w.id === data.id ? updatedWorkspace : w
+        ),
+      }));
+    } catch (error) {
+      console.error("Error updating workspace:", error);
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteWorkspace: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await WorkspaceService.delete(id);
+      set((state) => ({
+        workspaces: state.workspaces.filter((w) => w.id !== id),
+      }));
+    } catch (error) {
+      console.error("Error deleting workspace:", error);
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
   setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
 
-  addWorkspace: (workspaceData) =>
-    set((state) => {
-      const newWorkspace: Workspace = {
-        ...workspaceData,
-        id: nanoid(),
-        members: [],
-      };
-      return { workspaces: [...state.workspaces, newWorkspace] };
-    }),
+  fetchTeamMembers: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await TeamMemberService.getAll();
+      const teamMembers = Array.isArray(response)
+        ? response
+        : response.data || [];
+      set({ teamMembers });
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      set({ error: (error as Error).message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-  addTeamMember: (memberData) =>
-    set((state) => {
-      const newMember: TeamMember = {
-        ...memberData,
-        id: nanoid(),
-      };
+  createTeamMember: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newMember = await TeamMemberService.create(data);
+      set((state) => ({ teamMembers: [...state.teamMembers, newMember] }));
+    } catch (error) {
+      console.error("Error creating team member:", error);
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      // Add member to the assigned workspaces
-      const updatedWorkspaces = state.workspaces.map((ws) => {
-        if (memberData.workspaceIds.includes(ws.id)) {
-          return { ...ws, members: [...ws.members, newMember] };
-        }
-        return ws;
-      });
+  updateTeamMember: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatedMember = await TeamMemberService.update(data);
+      set((state) => ({
+        teamMembers: state.teamMembers.map((m) =>
+          m.id === data.id ? updatedMember : m
+        ),
+      }));
+    } catch (error) {
+      console.error("Error updating team member:", error);
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 
-      return { workspaces: updatedWorkspaces };
-    }),
+  deleteTeamMember: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await TeamMemberService.delete(id);
+      set((state) => ({
+        teamMembers: state.teamMembers.filter((m) => m.id !== id),
+      }));
+    } catch (error) {
+      console.error("Error deleting team member:", error);
+      set({ error: (error as Error).message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 }));

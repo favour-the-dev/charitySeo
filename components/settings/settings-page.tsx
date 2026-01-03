@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,13 @@ import { toast } from "react-hot-toast";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-modal";
 import { CreateTeamMemberModal } from "@/components/workspaces/create-team-member-modal";
+import { EditWorkspaceModal } from "@/components/workspaces/edit-workspace-modal";
+import { EditTeamMemberModal } from "@/components/workspaces/edit-team-member-modal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, Edit, Trash2 } from "lucide-react";
+import { Workspace } from "@/services/Workspace";
+import { TeamMember } from "@/services/TeamMember";
 import {
   Select,
   SelectContent,
@@ -44,10 +49,40 @@ export default function SettingsPageComponent() {
   const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
-  const { workspaces } = useWorkspaceStore();
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState(
-    workspaces[0]?.id || ""
+  // Edit/Delete State
+  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | null>(
+    null
   );
+  const [deletingWorkspace, setDeletingWorkspace] = useState<Workspace | null>(
+    null
+  );
+  const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(
+    null
+  );
+  const [deletingTeamMember, setDeletingTeamMember] =
+    useState<TeamMember | null>(null);
+
+  const {
+    workspaces,
+    teamMembers,
+    fetchWorkspaces,
+    fetchTeamMembers,
+    deleteWorkspace,
+    deleteTeamMember,
+  } = useWorkspaceStore();
+
+  useEffect(() => {
+    fetchWorkspaces();
+    fetchTeamMembers();
+  }, [fetchWorkspaces, fetchTeamMembers]);
+
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>("");
+
+  useEffect(() => {
+    if (workspaces.length > 0 && !selectedWorkspaceId) {
+      setSelectedWorkspaceId(String(workspaces[0].id));
+    }
+  }, [workspaces, selectedWorkspaceId]);
 
   // Password Change State
   const [newPassword, setNewPassword] = useState("");
@@ -71,9 +106,42 @@ export default function SettingsPageComponent() {
     setNewPassword("");
     setConfirmNewPassword("");
   };
+  const handleDeleteWorkspace = async () => {
+    if (!deletingWorkspace) return;
+    try {
+      await deleteWorkspace(deletingWorkspace.id);
+      toast.success("Workspace deleted successfully");
+      setDeletingWorkspace(null);
+    } catch (error) {
+      toast.error("Failed to delete workspace");
+    }
+  };
 
+  const handleDeleteTeamMember = async () => {
+    if (!deletingTeamMember) return;
+    try {
+      await deleteTeamMember(deletingTeamMember.id);
+      toast.success("Team member deleted successfully");
+      setDeletingTeamMember(null);
+    } catch (error) {
+      toast.error("Failed to delete team member");
+    }
+  };
   const selectedWorkspace =
-    workspaces.find((w) => w.id === selectedWorkspaceId) || workspaces[0];
+    workspaces.find((w) => String(w.id) === selectedWorkspaceId) ||
+    workspaces[0];
+
+  const getWorkspaceMembers = (workspaceId: number) => {
+    return teamMembers.filter((m) =>
+      m.user_access?.some(
+        (access) => access.id === workspaceId && access.has_access
+      )
+    );
+  };
+
+  const currentWorkspaceMembers = selectedWorkspace
+    ? getWorkspaceMembers(selectedWorkspace.id)
+    : [];
 
   return (
     <DashboardLayout>
@@ -131,82 +199,100 @@ export default function SettingsPageComponent() {
                 <Plus className="mr-2 h-4 w-4" />
                 Create New Workspace
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={() => setIsAddMemberOpen(true)}
               >
                 <Users className="mr-2 h-4 w-4" />
                 Add Team Member
-              </Button>
+              </Button> */}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {workspaces.map((workspace) => (
-                <Card key={workspace.id} className="flex flex-col">
-                  <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={workspace.image} alt={workspace.name} />
-                      <AvatarFallback>
-                        {workspace.name.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <CardTitle className="text-lg">
-                        {workspace.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {workspace.members.length} Members
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground uppercase font-semibold">
-                        Team Members
-                      </Label>
-                      {workspace.members.length > 0 ? (
-                        <div className="space-y-2">
-                          {workspace.members.slice(0, 3).map((member) => (
-                            <div
-                              key={member.id}
-                              className="flex items-center justify-between text-sm"
-                            >
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-6 w-6">
-                                  <AvatarFallback className="text-[10px]">
-                                    {member.firstName[0]}
-                                    {member.lastName[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span>
-                                  {member.firstName} {member.lastName}
+              {workspaces.map((workspace) => {
+                const members = getWorkspaceMembers(workspace.id);
+                return (
+                  <Card key={workspace.id} className="flex flex-col">
+                    <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage
+                          src={workspace.logo || ""}
+                          alt={workspace.name}
+                        />
+                        <AvatarFallback>
+                          {workspace.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <CardTitle className="text-lg">
+                          {workspace.name}
+                        </CardTitle>
+                        <CardDescription>
+                          {members.length} Members
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      <div className="space-y-2">
+                        <Label className="text-xs text-muted-foreground uppercase font-semibold">
+                          Team Members
+                        </Label>
+                        {members.length > 0 ? (
+                          <div className="space-y-2">
+                            {members.slice(0, 3).map((member) => (
+                              <div
+                                key={member.id}
+                                className="flex items-center justify-between text-sm"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className="text-[10px]">
+                                      {member.first_name[0]}
+                                      {member.last_name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span>
+                                    {member.first_name} {member.last_name}
+                                  </span>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                  {member.role}
                                 </span>
                               </div>
-                              <span className="text-xs text-muted-foreground">
-                                {member.role}
-                              </span>
-                            </div>
-                          ))}
-                          {workspace.members.length > 3 && (
-                            <p className="text-xs text-muted-foreground pt-1">
-                              +{workspace.members.length - 3} more members
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">
-                          No members yet
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="border-t pt-4">
-                    <Button variant="ghost" className="w-full text-sm">
-                      Manage Workspace
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                            ))}
+                            {members.length > 3 && (
+                              <p className="text-xs text-muted-foreground pt-1">
+                                +{members.length - 3} more members
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">
+                            No members yet
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="border-t pt-4 flex gap-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1 text-sm"
+                        onClick={() => setEditingWorkspace(workspace)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => setDeletingWorkspace(workspace)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
 
@@ -265,7 +351,7 @@ export default function SettingsPageComponent() {
                       </SelectTrigger>
                       <SelectContent>
                         {workspaces.map((ws) => (
-                          <SelectItem key={ws.id} value={ws.id}>
+                          <SelectItem key={ws.id} value={String(ws.id)}>
                             {ws.name}
                           </SelectItem>
                         ))}
@@ -285,31 +371,50 @@ export default function SettingsPageComponent() {
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {selectedWorkspace?.members.map((member) => (
+                      {currentWorkspaceMembers.map((member) => (
                         <TableRow key={member.id}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <Avatar className="h-8 w-8">
                                 <AvatarFallback>
-                                  {member.firstName[0]}
-                                  {member.lastName[0]}
+                                  {member.first_name[0]}
+                                  {member.last_name[0]}
                                 </AvatarFallback>
                               </Avatar>
-                              {member.firstName} {member.lastName}
+                              {member.first_name} {member.last_name}
                             </div>
                           </TableCell>
                           <TableCell>{member.email}</TableCell>
                           <TableCell>{member.role}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setEditingTeamMember(member)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => setDeletingTeamMember(member)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))}
-                      {(!selectedWorkspace?.members ||
-                        selectedWorkspace.members.length === 0) && (
+                      {currentWorkspaceMembers.length === 0 && (
                         <TableRow>
                           <TableCell
-                            colSpan={3}
+                            colSpan={4}
                             className="text-center h-24 text-muted-foreground"
                           >
                             No members found in this workspace.
@@ -333,6 +438,34 @@ export default function SettingsPageComponent() {
       <CreateTeamMemberModal
         open={isAddMemberOpen}
         onOpenChange={setIsAddMemberOpen}
+      />
+
+      <EditWorkspaceModal
+        open={!!editingWorkspace}
+        onOpenChange={(open) => !open && setEditingWorkspace(null)}
+        workspace={editingWorkspace}
+      />
+
+      <EditTeamMemberModal
+        open={!!editingTeamMember}
+        onOpenChange={(open) => !open && setEditingTeamMember(null)}
+        member={editingTeamMember}
+      />
+
+      <ConfirmDialog
+        open={!!deletingWorkspace}
+        onOpenChange={(open) => !open && setDeletingWorkspace(null)}
+        title="Delete Workspace"
+        description={`Are you sure you want to delete "${deletingWorkspace?.name}"? This action cannot be undone.`}
+        onConfirm={handleDeleteWorkspace}
+      />
+
+      <ConfirmDialog
+        open={!!deletingTeamMember}
+        onOpenChange={(open) => !open && setDeletingTeamMember(null)}
+        title="Delete Team Member"
+        description={`Are you sure you want to delete "${deletingTeamMember?.first_name} ${deletingTeamMember?.last_name}"? This action cannot be undone.`}
+        onConfirm={handleDeleteTeamMember}
       />
     </DashboardLayout>
   );
