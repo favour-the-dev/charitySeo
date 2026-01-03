@@ -7,14 +7,14 @@ export interface Workspace {
   id: number;
   name: string;
   slug: string;
-  is_default: boolean;
+  is_default: number;
   logo: string | null;
 }
 
 export interface CreateWorkspaceRequest {
   name: string;
   slug: string;
-  is_default: boolean;
+  is_default: number;
   logo?: File | string;
 }
 
@@ -55,14 +55,6 @@ export default class WorkspaceService {
   static async create(data: CreateWorkspaceRequest) {
     const { token } = this.getAuthToken();
     try {
-      //   const formData = new FormData();
-      //   formData.append("name", data.name);
-      //   formData.append("slug", data.slug);
-      //   formData.append("is_default", data.is_default ? "1" : "0");
-      //   if (data.logo) {
-      //     formData.append("logo", data.logo);
-      //   }
-
       const response = await axios.post(`${baseUrl}/store`, data, {
         headers: {
           Authorization: `Bearer ${token}`,

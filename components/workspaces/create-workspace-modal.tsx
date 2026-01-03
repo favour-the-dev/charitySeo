@@ -28,7 +28,8 @@ export function CreateWorkspaceModal({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [logo, setLogo] = useState<File | null>(null);
-  const [isDefault, setIsDefault] = useState(false);
+  const [isDefaultState, setIsDefaultState] = useState(false);
+  const [isDefault, setIsDefault] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +42,7 @@ export function CreateWorkspaceModal({
       await createWorkspace({
         name,
         slug,
-        is_default: isDefault,
+        is_default: isDefaultState ? 1 : 0,
         logo: logo || undefined,
       });
 
@@ -95,8 +96,10 @@ export function CreateWorkspaceModal({
           <div className="flex items-center space-x-2">
             <Checkbox
               id="default"
-              checked={isDefault}
-              onCheckedChange={(checked) => setIsDefault(checked as boolean)}
+              checked={isDefaultState}
+              onCheckedChange={(checked) =>
+                setIsDefaultState(checked as boolean)
+              }
             />
             <Label htmlFor="default">Set as default workspace</Label>
           </div>
