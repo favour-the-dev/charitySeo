@@ -22,7 +22,7 @@ export interface UpdateWorkspaceRequest {
   id: number;
   name: string;
   slug: string;
-  is_default: boolean;
+  is_default: number;
 }
 
 export default class WorkspaceService {

@@ -30,6 +30,7 @@ export function EditWorkspaceModal({
   const updateWorkspace = useWorkspaceStore((state) => state.updateWorkspace);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [isDefaultState, setIsDefaultState] = useState(false);
   const [isDefault, setIsDefault] = useState(0);
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export function EditWorkspaceModal({
         id: workspace.id,
         name,
         slug,
-        is_default: isDefault,
+        is_default: isDefaultState ? 1 : 0,
       });
 
       toast.success("Workspace updated successfully");
@@ -91,8 +92,10 @@ export function EditWorkspaceModal({
           <div className="flex items-center space-x-2">
             <Checkbox
               id="edit-default"
-              checked={isDefault}
-              onCheckedChange={(checked) => setIsDefault(checked as boolean)}
+              checked={isDefaultState}
+              onCheckedChange={(checked) =>
+                setIsDefaultState(checked as boolean)
+              }
             />
             <Label htmlFor="edit-default">Set as default workspace</Label>
           </div>
