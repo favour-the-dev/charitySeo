@@ -29,14 +29,43 @@ import Link from "next/link";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { CreateWorkspaceModal } from "@/components/workspaces/create-workspace-modal";
 import { CreateTeamMemberModal } from "@/components/workspaces/create-team-member-modal";
+import AuthService from "@/services/Auth";
+import { useUserStore } from "@/lib/user-store";
+import { useRouter } from "next/navigation";
+import { deleteCookie } from "cookies-next/client";
+import { toast } from "react-hot-toast";
 
 export function Header() {
-  const user = {
-    name: "Admin User",
-    email: "admin@charityseo.com",
-    avatar: "https://github.com/shadcn.png",
-    isAdmin: true,
+  const { user: storedUser, clearUser } = useUserStore();
+  const router = useRouter();
+
+  const user = storedUser
+    ? {
+        name: `${storedUser.first_name} ${storedUser.last_name}`,
+        email: storedUser.email,
+        avatar: "",
+        isAdmin: storedUser.role === "Administrator",
+      }
+    : {
+        name: "Admin User",
+        email: "admin@charityseo.com",
+        avatar: "https://github.com/shadcn.png",
+        isAdmin: true,
+      };
+
+  const handleLogout = async () => {
+    try {
+      await AuthService.logout();
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      deleteCookie("authToken");
+      clearUser();
+      router.push("/login");
+      toast.success("Logged out successfully");
+    }
   };
+
   const [open, setOpen] = useState(false);
   const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
@@ -207,7 +236,10 @@ export function Header() {
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
+            <DropdownMenuItem
+              className="cursor-pointer text-red-600 focus:text-red-600"
+              onSelect={handleLogout}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
             </DropdownMenuItem>
