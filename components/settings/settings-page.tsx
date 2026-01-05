@@ -23,9 +23,9 @@ import { EditWorkspaceModal } from "@/components/workspaces/edit-workspace-modal
 import { EditTeamMemberModal } from "@/components/workspaces/edit-team-member-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Users, Edit, Trash2 } from "lucide-react";
+import { Plus, Users, Edit, Trash2, Loader2 } from "lucide-react";
 import { Workspace } from "@/services/Workspace";
-import { TeamMember } from "@/services/TeamMember";
+import { TeamMemberType } from "@/types/types";
 import {
   Select,
   SelectContent,
@@ -56,11 +56,10 @@ export default function SettingsPageComponent() {
   const [deletingWorkspace, setDeletingWorkspace] = useState<Workspace | null>(
     null
   );
-  const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(
-    null
-  );
+  const [editingTeamMember, setEditingTeamMember] =
+    useState<TeamMemberType | null>(null);
   const [deletingTeamMember, setDeletingTeamMember] =
-    useState<TeamMember | null>(null);
+    useState<TeamMemberType | null>(null);
 
   const {
     workspaces,
@@ -69,6 +68,7 @@ export default function SettingsPageComponent() {
     fetchTeamMembers,
     deleteWorkspace,
     deleteTeamMember,
+    isLoading,
   } = useWorkspaceStore();
 
   useEffect(() => {
@@ -133,9 +133,7 @@ export default function SettingsPageComponent() {
 
   const getWorkspaceMembers = (workspaceId: number) => {
     return teamMembers.filter((m) =>
-      m.user_access?.some(
-        (access) => access.id === workspaceId && access.has_access
-      )
+      m.all_user_workspaces?.some((ws) => ws.work_space_id === workspaceId)
     );
   };
 
@@ -208,92 +206,99 @@ export default function SettingsPageComponent() {
               </Button> */}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {workspaces.map((workspace) => {
-                const members = getWorkspaceMembers(workspace.id);
-                return (
-                  <Card key={workspace.id} className="flex flex-col">
-                    <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={workspace.logo || ""}
-                          alt={workspace.name}
-                        />
-                        <AvatarFallback>
-                          {workspace.name.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <CardTitle className="text-lg">
-                          {workspace.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {members.length} Members
-                        </CardDescription>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                      <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground uppercase font-semibold">
-                          Team Members
-                        </Label>
-                        {members.length > 0 ? (
-                          <div className="space-y-2">
-                            {members.slice(0, 3).map((member) => (
-                              <div
-                                key={member.id}
-                                className="flex items-center justify-between text-sm"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-6 w-6">
-                                    <AvatarFallback className="text-[10px]">
-                                      {member.first_name[0]}
-                                      {member.last_name[0]}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span>
-                                    {member.first_name} {member.last_name}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {workspaces.map((workspace) => {
+                  const members = getWorkspaceMembers(workspace.id);
+                  return (
+                    <Card key={workspace.id} className="flex flex-col">
+                      <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage
+                            src={workspace.logo || ""}
+                            alt={workspace.name}
+                          />
+                          <AvatarFallback>
+                            {workspace.name &&
+                              workspace.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <CardTitle className="text-lg">
+                            {workspace.name}
+                          </CardTitle>
+                          <CardDescription>
+                            {members.length} Members
+                          </CardDescription>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="flex-1">
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground uppercase font-semibold">
+                            Team Members
+                          </Label>
+                          {members.length > 0 ? (
+                            <div className="space-y-2">
+                              {members.slice(0, 3).map((member) => (
+                                <div
+                                  key={member.id}
+                                  className="flex items-center justify-between text-sm"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Avatar className="h-6 w-6">
+                                      <AvatarFallback className="text-[10px]">
+                                        {member.first_name[0]}
+                                        {member.last_name[0]}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span>
+                                      {member.first_name} {member.last_name}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground">
+                                    {member.role}
                                   </span>
                                 </div>
-                                <span className="text-xs text-muted-foreground">
-                                  {member.role}
-                                </span>
-                              </div>
-                            ))}
-                            {members.length > 3 && (
-                              <p className="text-xs text-muted-foreground pt-1">
-                                +{members.length - 3} more members
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground italic">
-                            No members yet
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="border-t pt-4 flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="flex-1 text-sm"
-                        onClick={() => setEditingWorkspace(workspace)}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => setDeletingWorkspace(workspace)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-            </div>
+                              ))}
+                              {members.length > 3 && (
+                                <p className="text-xs text-muted-foreground pt-1">
+                                  +{members.length - 3} more members
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">
+                              No members yet
+                            </p>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="border-t pt-4 flex gap-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1 text-sm"
+                          onClick={() => setEditingWorkspace(workspace)}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => setDeletingWorkspace(workspace)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="password" className="space-y-4">
@@ -365,64 +370,70 @@ export default function SettingsPageComponent() {
                 </div>
 
                 <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {currentWorkspaceMembers.map((member) => (
-                        <TableRow key={member.id}>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback>
-                                  {member.first_name[0]}
-                                  {member.last_name[0]}
-                                </AvatarFallback>
-                              </Avatar>
-                              {member.first_name} {member.last_name}
-                            </div>
-                          </TableCell>
-                          <TableCell>{member.email}</TableCell>
-                          <TableCell>{member.role}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setEditingTeamMember(member)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => setDeletingTeamMember(member)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {currentWorkspaceMembers.length === 0 && (
+                  {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell
-                            colSpan={4}
-                            className="text-center h-24 text-muted-foreground"
-                          >
-                            No members found in this workspace.
-                          </TableCell>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {currentWorkspaceMembers.map((member) => (
+                          <TableRow key={member.id}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback>
+                                    {member.first_name[0]}
+                                    {member.last_name[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {member.first_name} {member.last_name}
+                              </div>
+                            </TableCell>
+                            <TableCell>{member.email}</TableCell>
+                            <TableCell>{member.role}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingTeamMember(member)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => setDeletingTeamMember(member)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        {currentWorkspaceMembers.length === 0 && (
+                          <TableRow>
+                            <TableCell
+                              colSpan={4}
+                              className="text-center h-24 text-muted-foreground"
+                            >
+                              No members found in this workspace.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  )}
                 </div>
               </CardContent>
             </Card>

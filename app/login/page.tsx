@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,10 +8,12 @@ import { Loader2, Quote } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import AuthService from "@/services/Auth";
+import { useUserStore } from "@/lib/user-store";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const setUser = useUserStore((state) => state.setUser);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,11 +24,12 @@ export default function LoginPage() {
     const password = formData.get("password") as string;
 
     try {
-      await AuthService.login(email, password);
-      toast.success("Logged in successfully");
+      const res = await AuthService.login(email, password);
+      setUser(res.data.user);
+      toast.success(`${res.message}`);
       router.push("/dashboard");
     } catch (error) {
-      toast.error("Incorrect Credentials");
+      toast.error("Credentials do not match our records");
       console.error("Login error:", error);
     } finally {
       setIsLoading(false);
@@ -53,7 +55,6 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
-                defaultValue="admin@charityseo.com"
               />
             </div>
             <div className="grid gap-2">
@@ -70,8 +71,8 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
+                placeholder="*******"
                 required
-                defaultValue="password"
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>

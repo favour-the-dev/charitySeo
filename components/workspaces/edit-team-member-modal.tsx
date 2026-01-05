@@ -19,14 +19,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useWorkspaceStore, Role } from "@/lib/workspace-store";
-import { TeamMember } from "@/services/TeamMember";
+import { TeamMemberType } from "@/types/types";
 import { toast } from "react-hot-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface EditTeamMemberModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  member: TeamMember | null;
+  member: TeamMemberType | null;
 }
 
 export function EditTeamMemberModal({
@@ -50,9 +50,7 @@ export function EditTeamMemberModal({
       setRole(member.role);
       // Pre-select workspaces where user has access
       const accessIds =
-        member.user_access
-          ?.filter((access) => access.has_access)
-          .map((access) => access.id) || [];
+        member.all_user_workspaces?.map((ws) => ws.work_space_id) || [];
       setSelectedWorkspaces(accessIds);
     }
   }, [member]);

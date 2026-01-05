@@ -41,7 +41,7 @@ export function Header() {
   const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
-  const { workspaces, activeWorkspaceId, setActiveWorkspace } =
+  const { workspaces, activeWorkspaceId, setActiveWorkspace, isLoading } =
     useWorkspaceStore();
   const activeWorkspace =
     workspaces.find((w) => w.id === activeWorkspaceId) || workspaces[0];
@@ -81,20 +81,26 @@ export function Header() {
           <DropdownMenuContent className="w-[300px]">
             <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {workspaces.map((workspace) => (
-              <DropdownMenuItem
-                key={workspace.id}
-                onSelect={() => setActiveWorkspace(workspace.id)}
-                className="gap-2"
-              >
-                <div className="flex h-4 w-4 items-center justify-center">
-                  {activeWorkspace?.id === workspace.id && (
-                    <Check className="h-4 w-4" />
-                  )}
-                </div>
-                {workspace.name}
+            {!isLoading &&
+              workspaces.map((workspace) => (
+                <DropdownMenuItem
+                  key={workspace.id}
+                  onSelect={() => setActiveWorkspace(workspace.id)}
+                  className="gap-2"
+                >
+                  <div className="flex h-4 w-4 items-center justify-center">
+                    {activeWorkspace?.id === workspace.id && (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </div>
+                  {workspace.name}
+                </DropdownMenuItem>
+              ))}
+            {isLoading && (
+              <DropdownMenuItem className="justify-center">
+                Loading...
               </DropdownMenuItem>
-            ))}
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="gap-2"

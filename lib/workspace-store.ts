@@ -5,7 +5,6 @@ import WorkspaceService, {
   UpdateWorkspaceRequest,
 } from "@/services/Workspace";
 import TeamMemberService, {
-  TeamMember,
   CreateTeamMemberRequest,
   UpdateTeamMemberRequest,
 } from "@/services/TeamMember";
@@ -15,7 +14,7 @@ export type Role = "Client" | "Administrator" | "Manager" | string;
 
 interface WorkspaceState {
   workspaces: Workspace[];
-  teamMembers: TeamMember[];
+  teamMembers: TeamMemberType[];
   activeWorkspaceId: number | null;
   isLoading: boolean;
   error: string | null;
@@ -74,6 +73,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     try {
       const newWorkspace = await WorkspaceService.create(data);
       set((state) => ({ workspaces: [...state.workspaces, newWorkspace] }));
+      await get().fetchWorkspaces();
     } catch (error) {
       console.error("Error creating workspace:", error);
       set({ error: (error as Error).message });
@@ -92,6 +92,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           w.id === data.id ? updatedWorkspace : w
         ),
       }));
+      await get().fetchWorkspaces();
     } catch (error) {
       console.error("Error updating workspace:", error);
       set({ error: (error as Error).message });
@@ -108,6 +109,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set((state) => ({
         workspaces: state.workspaces.filter((w) => w.id !== id),
       }));
+      await get().fetchWorkspaces();
     } catch (error) {
       console.error("Error deleting workspace:", error);
       set({ error: (error as Error).message });
@@ -125,30 +127,18 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const response = await TeamMemberService.getAll();
       console.log("team member response", response);
 
-      let rawMembers: any[] = [];
+      const rawMembers: TeamMemberType[] =
+        response.users && Array.isArray(response.users) ? response.users : [];
 
-      if (Array.isArray(response)) {
-        rawMembers = response;
-      } else if (response.users && Array.isArray(response.users)) {
-        rawMembers = response.users;
-      } else if (response.data && Array.isArray(response.data)) {
-        rawMembers = response.data;
-      }
+      // if (Array.isArray(response)) {
+      //   rawMembers = response;
+      // } else if (response.users && Array.isArray(response.users)) {
+      //   rawMembers = response.users;
+      // } else if (response.data && Array.isArray(response.data)) {
+      //   rawMembers = response.data;
+      // }
 
-      const teamMembers: TeamMember[] = rawMembers.map((m) => ({
-        id: m.id,
-        first_name: m.first_name,
-        last_name: m.last_name,
-        email: m.email,
-        role: m.role,
-        user_access:
-          m.user_access ||
-          m.all_user_workspaces?.map((ws: any) => ({
-            id: ws.work_space_id,
-            has_access: true,
-          })) ||
-          [],
-      }));
+      const teamMembers: TeamMemberType[] = rawMembers as TeamMemberType[];
 
       set({ teamMembers });
     } catch (error) {
@@ -164,6 +154,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     try {
       const newMember = await TeamMemberService.create(data);
       set((state) => ({ teamMembers: [...state.teamMembers, newMember] }));
+      await get().fetchTeamMembers();
     } catch (error) {
       console.error("Error creating team member:", error);
       set({ error: (error as Error).message });
@@ -182,6 +173,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           m.id === data.id ? updatedMember : m
         ),
       }));
+      await get().fetchTeamMembers();
     } catch (error) {
       console.error("Error updating team member:", error);
       set({ error: (error as Error).message });
@@ -198,6 +190,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set((state) => ({
         teamMembers: state.teamMembers.filter((m) => m.id !== id),
       }));
+      await get().fetchTeamMembers();
     } catch (error) {
       console.error("Error deleting team member:", error);
       set({ error: (error as Error).message });
