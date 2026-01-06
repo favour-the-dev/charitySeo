@@ -24,9 +24,7 @@ export default function RefundPolicyPage() {
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl mb-2">
               Refund Policy
             </h1>
-            <p className="text-muted-foreground">
-              Last updated: April 4th, 2025
-            </p>
+            <p className="text-muted-foreground">Last updated: Jan 6th, 2026</p>
           </div>
 
           <div className="prose prose-gray dark:prose-invert max-w-none space-y-8 text-foreground">
@@ -44,8 +42,8 @@ export default function RefundPolicyPage() {
               </p>
               <p className="leading-7">
                 This policy is designed to clearly outline your rights,
-                responsibilities, and options regarding subscription payments and
-                cancellations.
+                responsibilities, and options regarding subscription payments
+                and cancellations.
               </p>
             </section>
 
@@ -94,8 +92,8 @@ export default function RefundPolicyPage() {
                 </li>
                 <li>
                   After canceling, you will continue to have access to your
-                  subscription benefits until the end of your current paid binding
-                  period, but no further charges will be made.
+                  subscription benefits until the end of your current paid
+                  binding period, but no further charges will be made.
                 </li>
               </ul>
               <p className="leading-7">
@@ -149,8 +147,8 @@ export default function RefundPolicyPage() {
                 once a payment is processed.
               </p>
               <p className="leading-7">
-                We strongly encourage you to carefully consider your purchase and
-                ensure that Localmator meets your needs before subscribing.
+                We strongly encourage you to carefully consider your purchase
+                and ensure that Localmator meets your needs before subscribing.
               </p>
               <p className="leading-7">
                 If you have any questions regarding this policy or your account,

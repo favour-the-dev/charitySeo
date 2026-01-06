@@ -46,6 +46,11 @@ export function CreateTeamMemberModal({
       toast.error("All fields are required");
       return;
     }
+    // if (password.length < 8) {
+    //   toast.error("Password must be at least 8 characters long");
+    //   return;
+    // }
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -56,7 +61,7 @@ export function CreateTeamMemberModal({
     }
 
     try {
-      await createTeamMember({
+      const res = await createTeamMember({
         first_name: firstName,
         last_name: lastName,
         email,
@@ -64,14 +69,17 @@ export function CreateTeamMemberModal({
         password,
         user_access: selectedWorkspaces.map((id) => ({ id, has_access: true })),
       });
-
-      toast.success("Team member added successfully");
+      if (res.status === "success") {
+        toast.success(`Error: ${res.message}`);
+      } else {
+        toast.error(`Error: ${res.message}`);
+      }
       onOpenChange(false);
       // Reset form
       setFirstName("");
       setLastName("");
       setEmail("");
-      setRole("Client");
+      setRole("team_member");
       setPassword("");
       setConfirmPassword("");
       setSelectedWorkspaces([]);
@@ -130,8 +138,9 @@ export function CreateTeamMemberModal({
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="team_member">Member</SelectItem>
-                <SelectItem value="super_admin">Admin</SelectItem>
+                <SelectItem value="team_member">Client</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
               </SelectContent>
             </Select>
           </div>

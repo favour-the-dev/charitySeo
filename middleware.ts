@@ -10,6 +10,7 @@ export function middleware(request: NextRequest) {
     "/login",
     "/privacy-policy",
     "/terms-of-service",
+    "/refund-policy",
     "/favicon.ico",
   ];
 

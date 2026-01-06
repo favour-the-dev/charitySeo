@@ -1,8 +1,7 @@
 import axios from "axios";
 import { getCookie } from "cookies-next/client";
-
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/workspace`;
-
+const activeBaseUrl = `${process.env.NEXT_PUBLIC_API_URL}/workspaces`;
 export interface Workspace {
   id: number;
   name: string;
@@ -52,10 +51,10 @@ export default class WorkspaceService {
     }
   }
 
-  static async create(data: CreateWorkspaceRequest) {
+  static async create(payload: CreateWorkspaceRequest) {
     const { token } = this.getAuthToken();
     try {
-      const response = await axios.post(`${baseUrl}/store`, data, {
+      const response = await axios.post(`${baseUrl}/store`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -108,7 +107,7 @@ export default class WorkspaceService {
     const { token } = this.getAuthToken();
     try {
       const response = await axios.post(
-        `${baseUrl}/${id}`,
+        `${activeBaseUrl}/${id}`,
         {},
         {
           headers: {

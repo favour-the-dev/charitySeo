@@ -80,7 +80,6 @@ export function EditTeamMemberModal({
           has_access: selectedWorkspaces.includes(ws.id),
         })),
       });
-
       toast.success("Team member updated successfully");
       onOpenChange(false);
       setPassword(""); // Clear password field
@@ -139,9 +138,9 @@ export function EditTeamMemberModal({
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Client">Client</SelectItem>
-                <SelectItem value="Administrator">Administrator</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
+                <SelectItem value="team_member">Client</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
               </SelectContent>
             </Select>
           </div>

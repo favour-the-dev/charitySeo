@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getCookie } from "cookies-next/client";
-
+import { AddTeamMemberResponse } from "@/types/types";
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/team`;
 
 export interface TeamMember {
@@ -64,16 +64,17 @@ export default class TeamMemberService {
     }
   }
 
-  static async create(data: CreateTeamMemberRequest) {
+  static async create(payload: CreateTeamMemberRequest) {
     const { token } = this.getAuthToken();
     try {
-      const response = await axios.post(`${baseUrl}/add`, data, {
+      const response = await axios.post(`${baseUrl}/add`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      return response.data;
+      const data: AddTeamMemberResponse = response.data;
+      return data;
     } catch (error) {
       console.error(error);
       throw new Error("Failed to create team member");

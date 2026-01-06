@@ -123,13 +123,16 @@ export function Header() {
                       <Check className="h-4 w-4" />
                     )}
                   </div>
-                  {/* <Image
-                    src={workspace.logo || "/workspace-default-logo.png"}
-                    alt={workspace.slug}
-                    width={16}
-                    height={16}
-                    className="mr-2 h-4 w-4 rounded-sm object-contain"
-                  /> */}
+                  <Avatar className="h-4 w-4">
+                    <AvatarImage
+                      src={workspace.logo || ""}
+                      alt={workspace.name}
+                    />
+                    <AvatarFallback>
+                      {workspace.name &&
+                        workspace.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   {workspace.name}
                 </DropdownMenuItem>
               ))}

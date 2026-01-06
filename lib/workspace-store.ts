@@ -9,6 +9,7 @@ import TeamMemberService, {
   UpdateTeamMemberRequest,
 } from "@/services/TeamMember";
 import { UserWorkspace, TeamMemberType } from "@/types/types";
+import { AddTeamMemberResponse } from "@/types/types";
 
 export type Role = "Client" | "Administrator" | "Manager" | string;
 
@@ -30,7 +31,9 @@ interface WorkspaceState {
   setIsInitializing: (isInitializing: boolean) => void;
 
   fetchTeamMembers: () => Promise<void>;
-  createTeamMember: (data: CreateTeamMemberRequest) => Promise<void>;
+  createTeamMember: (
+    data: CreateTeamMemberRequest
+  ) => Promise<AddTeamMemberResponse>;
   updateTeamMember: (data: UpdateTeamMemberRequest) => Promise<void>;
   deleteTeamMember: (id: number) => Promise<void>;
 }
@@ -174,8 +177,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const newMember = await TeamMemberService.create(data);
-      set((state) => ({ teamMembers: [...state.teamMembers, newMember] }));
+      set((state) => ({
+        teamMembers: [...state.teamMembers, newMember.user as TeamMemberType],
+      }));
       await get().fetchTeamMembers();
+      return newMember;
     } catch (error) {
       console.error("Error creating team member:", error);
       set({ error: (error as Error).message });
@@ -191,7 +197,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const updatedMember = await TeamMemberService.update(data);
       set((state) => ({
         teamMembers: state.teamMembers.map((m) =>
-          m.id === data.id ? updatedMember : m
+          m.id === data.id ? (updatedMember.user as TeamMemberType) : m
         ),
       }));
       await get().fetchTeamMembers();

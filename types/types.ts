@@ -204,3 +204,12 @@ export interface TeamMemberType {
   user_workspaces: number[];
   uuid: string | null;
 }
+
+export interface AddTeamMemberResponse {
+  status: string;
+  message: string;
+  user?: TeamMemberType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
