@@ -13,6 +13,10 @@ import { AddTeamMemberResponse } from "@/types/types";
 
 export type Role = "Client" | "Administrator" | "Manager" | string;
 
+type teamMemberResponse = {
+  status: string;
+  message: string;
+};
 interface WorkspaceState {
   workspaces: Workspace[];
   teamMembers: TeamMemberType[];
@@ -33,7 +37,7 @@ interface WorkspaceState {
   fetchTeamMembers: () => Promise<void>;
   createTeamMember: (
     data: CreateTeamMemberRequest
-  ) => Promise<AddTeamMemberResponse>;
+  ) => Promise<teamMemberResponse>;
   updateTeamMember: (data: UpdateTeamMemberRequest) => Promise<void>;
   deleteTeamMember: (id: number) => Promise<void>;
 }
@@ -181,11 +185,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         teamMembers: [...state.teamMembers, newMember.user as TeamMemberType],
       }));
       await get().fetchTeamMembers();
-      return newMember;
+      return { status: "success", message: newMember.message };
     } catch (error) {
       console.error("Error creating team member:", error);
       set({ error: (error as Error).message });
-      throw error;
+      return { status: "error", message: (error as Error).message };
     } finally {
       set({ isLoading: false });
     }

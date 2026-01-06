@@ -28,6 +28,7 @@ export default function LoginPage() {
       setUser(res.data.user);
       toast.success(`${res.message}`);
       router.push("/dashboard");
+      window.location.reload();
     } catch (error) {
       toast.error("Credentials do not match our records");
       console.error("Login error:", error);

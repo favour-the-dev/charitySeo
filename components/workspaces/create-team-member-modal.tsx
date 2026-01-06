@@ -60,32 +60,30 @@ export function CreateTeamMemberModal({
       return;
     }
 
-    try {
-      const res = await createTeamMember({
-        first_name: firstName,
-        last_name: lastName,
-        email,
-        role,
-        password,
-        user_access: selectedWorkspaces.map((id) => ({ id, has_access: true })),
-      });
-      if (res.status === "success") {
-        toast.success(`Error: ${res.message}`);
-      } else {
-        toast.error(`Error: ${res.message}`);
-      }
-      onOpenChange(false);
-      // Reset form
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setRole("team_member");
-      setPassword("");
-      setConfirmPassword("");
-      setSelectedWorkspaces([]);
-    } catch (error) {
-      toast.error("Failed to add team member");
+    const res = await createTeamMember({
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      role,
+      password,
+      user_access: selectedWorkspaces.map((id) => ({ id, has_access: true })),
+    });
+
+    if (res.status === "success") {
+      toast.success("Team member added successfully");
+    } else {
+      toast.error(`${res.message}`);
     }
+
+    onOpenChange(false);
+    // Reset form
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setRole("team_member");
+    setPassword("");
+    setConfirmPassword("");
+    setSelectedWorkspaces([]);
   };
 
   const toggleWorkspace = (id: number) => {
