@@ -16,6 +16,7 @@ export type Role = "Client" | "Administrator" | "Manager" | string;
 type teamMemberResponse = {
   status: string;
   message: string;
+  errors?: Record<string, string[]>;
 };
 interface WorkspaceState {
   workspaces: Workspace[];
@@ -179,21 +180,55 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   createTeamMember: async (data) => {
     set({ isLoading: true, error: null });
+
     try {
       const newMember = await TeamMemberService.create(data);
+
       set((state) => ({
         teamMembers: [...state.teamMembers, newMember.user as TeamMemberType],
       }));
-      await get().fetchTeamMembers();
-      return { status: "success", message: newMember.message };
-    } catch (error) {
+
+      // await get().fetchTeamMembers();
+
+      return {
+        status: "success",
+        message: "Team member created successfully",
+      };
+    } catch (error: any) {
       console.error("Error creating team member:", error);
-      set({ error: (error as Error).message });
-      return { status: "error", message: (error as Error).message };
+
+      set({ error: error.message });
+
+      return {
+        status: "error",
+        message: error.message,
+        errors: error.errors, // 👈 IMPORTANT
+      };
     } finally {
       set({ isLoading: false });
     }
   },
+
+  // createTeamMember: async (data) => {
+  //   set({ isLoading: true, error: null });
+  //   try {
+  //     const newMember = await TeamMemberService.create(data);
+  //     if (newMember) {
+  //       set((state) => ({
+  //         teamMembers: [...state.teamMembers, newMember.user as TeamMemberType],
+  //       }));
+  //       await get().fetchTeamMembers();
+  //       return { status: "success", message: newMember.errors };
+  //     }
+  //     return { status: "error", message: "Failed to create team member" };
+  //   } catch (error) {
+  //     console.error("Error creating team member:", error);
+  //     set({ error: (error as Error).message });
+  //     return { status: "error", message: (error as Error).message };
+  //   } finally {
+  //     set({ isLoading: false });
+  //   }
+  // },
 
   updateTeamMember: async (data) => {
     set({ isLoading: true, error: null });

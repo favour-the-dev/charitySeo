@@ -64,8 +64,25 @@ export default class TeamMemberService {
     }
   }
 
+  // static async create(payload: CreateTeamMemberRequest) {
+  //   const { token } = this.getAuthToken();
+  //   try {
+  //     const response = await axios.post(`${baseUrl}/add`, payload, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  //     const data: AddTeamMemberResponse = response.data;
+  //     console.log("data", data);
+  //     return data;
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
   static async create(payload: CreateTeamMemberRequest) {
     const { token } = this.getAuthToken();
+
     try {
       const response = await axios.post(`${baseUrl}/add`, payload, {
         headers: {
@@ -73,11 +90,21 @@ export default class TeamMemberService {
           "Content-Type": "application/json",
         },
       });
-      const data: AddTeamMemberResponse = response.data;
-      return data;
-    } catch (error) {
-      console.error(error);
-      throw new Error("Failed to create team member");
+
+      return response.data;
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        throw {
+          status: error.response?.data?.status ?? "error",
+          message: error.response?.data?.message ?? "Something went wrong",
+          errors: error.response?.data?.errors ?? null,
+        };
+      }
+
+      throw {
+        status: "error",
+        message: "Unexpected error occurred",
+      };
     }
   }
 

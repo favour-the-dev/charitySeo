@@ -69,21 +69,30 @@ export function CreateTeamMemberModal({
       user_access: selectedWorkspaces.map((id) => ({ id, has_access: true })),
     });
 
-    if (res.status === "success") {
-      toast.success("Team member added successfully");
-    } else {
-      toast.error(`${res.message}`);
-    }
+    console.log("res", res);
 
-    onOpenChange(false);
-    // Reset form
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setRole("team_member");
-    setPassword("");
-    setConfirmPassword("");
-    setSelectedWorkspaces([]);
+    // if (res.status === "success") {
+    //   toast.success("Team member added successfully");
+    // } else {
+    //   toast.error(`${res.message}`);
+    // }
+    if (res.status === "error" && res.errors) {
+      Object.entries(res.errors).forEach(([field, messages]) => {
+        toast.error(`${field}: ${messages.join(", ")}`);
+      });
+
+      onOpenChange(true);
+    } else if (res.status === "success") {
+      onOpenChange(false);
+      // Reset form
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setRole("team_member");
+      setPassword("");
+      setConfirmPassword("");
+      setSelectedWorkspaces([]);
+    }
   };
 
   const toggleWorkspace = (id: number) => {

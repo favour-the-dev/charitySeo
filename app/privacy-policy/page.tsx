@@ -114,7 +114,7 @@ export default function PrivacyPolicyPage() {
                 children under the age of 13. We do not knowingly or
                 intentionally collect information about children under 13 years
                 of age. If you feel that we have gathered data for any child
-                under 13, please contact us at privacy@charityseo.com so we may
+                under 13, please contact us at support@localmator.com so we may
                 take immediate corrective action.
               </p>
             </section>
@@ -230,7 +230,7 @@ export default function PrivacyPolicyPage() {
                 data internationally in the circumstances defined in the section
                 “How we Share Information we collect”. By using our platform or
                 site, you consent to have your personal data transferred in the
-                United States or any country where CharitySEO or its service
+                United States or any country where Localmator or its service
                 providers, affiliates and subsidiaries maintain facilities.
               </p>
               <p className="leading-7">
@@ -277,7 +277,7 @@ export default function PrivacyPolicyPage() {
               </h2>
               <p className="leading-7">
                 Your personal data belongs to you. At any time, you can contact
-                us at support@charityseo.com to:
+                us at support@localmator.com to:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Update your personal information.</li>
@@ -286,7 +286,7 @@ export default function PrivacyPolicyPage() {
                 <li>Data delivery to you or a third party.</li>
               </ul>
               <p className="leading-7">
-                If you are a user of our CharitySEO platform, request for
+                If you are a user of our Localmator platform, request for
                 deletion or to stop processing of your personal data would mean
                 loss of access to our platform.
               </p>
@@ -302,7 +302,7 @@ export default function PrivacyPolicyPage() {
                 9. Contact our Data Privacy Officer
               </h2>
               <p className="leading-7">
-                CharitySEO has a Data Privacy Officer (DPO), who is responsible
+                Localmator has a Data Privacy Officer (DPO), who is responsible
                 for all matters relating to privacy and data protection. The
                 Data Privacy officer can be contacted at the following address:
               </p>
@@ -313,7 +313,7 @@ export default function PrivacyPolicyPage() {
                 <p>Omaha, NE 68131</p>
                 <div className="mt-4">
                   <p>Email: support@loaclmator.com</p>
-                  <p>Phone: [Phone Number]</p>
+                  {/* <p>Phone: [Phone Number]</p> */}
                 </div>
               </div>
             </section>
