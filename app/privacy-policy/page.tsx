@@ -43,8 +43,8 @@ export default function PrivacyPolicyPage() {
                 At NETSACH TECH LTD, we take your privacy seriously. This
                 Privacy Policy applies to our website
                 https://app.localmator.com/ and our platform Localmator. This
-                policy explains how Localmator collects, uses and protects your
-                Information, including data that is personal to you and can
+                policy explains how NETSACH TECH LTD collects, uses and protects
+                your Information, including data that is personal to you and can
                 identify you an as individual. It also describes how you can
                 access, update and delete your personal information.
               </p>
@@ -230,8 +230,9 @@ export default function PrivacyPolicyPage() {
                 data internationally in the circumstances defined in the section
                 “How we Share Information we collect”. By using our platform or
                 site, you consent to have your personal data transferred in the
-                United States or any country where Localmator or its service
-                providers, affiliates and subsidiaries maintain facilities.
+                United States or any country where NETSACH TECH LTD or its
+                service providers, affiliates and subsidiaries maintain
+                facilities.
               </p>
               <p className="leading-7">
                 This Privacy Policy shall apply even if we transfer Personal
