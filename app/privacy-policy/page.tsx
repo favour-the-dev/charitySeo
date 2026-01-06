@@ -307,12 +307,12 @@ export default function PrivacyPolicyPage() {
                 Data Privacy officer can be contacted at the following address:
               </p>
               <div className="bg-muted p-4 rounded-lg text-sm">
-                <p className="font-medium">Loacalmator</p>
+                <p className="font-medium">Localmator</p>
                 <p>Attn: Data Privacy Officer</p>
                 <p>3568 Dodge Street</p>
                 <p>Omaha, NE 68131</p>
                 <div className="mt-4">
-                  <p>Email: support@loaclmator.com</p>
+                  <p>Email: support@localmator.com</p>
                   {/* <p>Phone: [Phone Number]</p> */}
                 </div>
               </div>
