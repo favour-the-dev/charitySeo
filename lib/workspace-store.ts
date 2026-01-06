@@ -23,7 +23,9 @@ interface WorkspaceState {
   createWorkspace: (data: CreateWorkspaceRequest) => Promise<void>;
   updateWorkspace: (data: UpdateWorkspaceRequest) => Promise<void>;
   deleteWorkspace: (id: number) => Promise<void>;
-  setActiveWorkspace: (id: number) => void;
+  setActiveWorkspace: (id: number) => Promise<void>;
+  setWorkspaces: (workspaces: Workspace[]) => void;
+  setActiveWorkspaceId: (id: number) => void;
 
   fetchTeamMembers: () => Promise<void>;
   createTeamMember: (data: CreateTeamMemberRequest) => Promise<void>;
@@ -119,7 +121,21 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
   },
 
-  setActiveWorkspace: (id) => set({ activeWorkspaceId: id }),
+  setActiveWorkspace: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await WorkspaceService.setActive(id);
+      set({ activeWorkspaceId: id });
+    } catch (error) {
+      console.error("Error setting active workspace:", error);
+      set({ error: (error as Error).message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  setWorkspaces: (workspaces) => set({ workspaces }),
+  setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
 
   fetchTeamMembers: async () => {
     set({ isLoading: true, error: null });

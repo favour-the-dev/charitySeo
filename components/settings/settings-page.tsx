@@ -41,6 +41,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useUserStore } from "@/lib/user-store";
 
 export default function SettingsPageComponent() {
   const searchParams = useSearchParams();
@@ -70,6 +71,8 @@ export default function SettingsPageComponent() {
     deleteTeamMember,
     isLoading,
   } = useWorkspaceStore();
+
+  const { user } = useUserStore();
 
   useEffect(() => {
     fetchWorkspaces();
@@ -174,15 +177,24 @@ export default function SettingsPageComponent() {
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input id="name" defaultValue="Admin User" />
+                  <Input
+                    id="name"
+                    defaultValue={
+                      user ? `${user.first_name} ${user.last_name}` : ""
+                    }
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" defaultValue="admin@charityseo.com" />
+                  <Input id="email" defaultValue={user?.email || ""} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="role">Role</Label>
-                  <Input id="role" defaultValue="Administrator" disabled />
+                  <Input
+                    id="role"
+                    defaultValue={user?.parsed_role || user?.role || ""}
+                    disabled
+                  />
                 </div>
               </CardContent>
               <CardFooter>

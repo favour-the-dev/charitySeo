@@ -48,7 +48,7 @@ export function Header() {
       }
     : {
         name: "Admin User",
-        email: "admin@charityseo.com",
+        email: "support@localmator.com",
         avatar: "https://github.com/shadcn.png",
         isAdmin: true,
       };
@@ -101,7 +101,7 @@ export function Header() {
               <div className="flex items-center gap-2 truncate">
                 <Building2 className="h-4 w-4 shrink-0" />
                 <span className="truncate hidden sm:inline">
-                  {activeWorkspace?.name} test
+                  {activeWorkspace?.name}
                 </span>
               </div>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -127,7 +127,7 @@ export function Header() {
               ))}
             {isLoading && (
               <DropdownMenuItem className="justify-center">
-                Loading...
+                <span>Loading...</span>
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />

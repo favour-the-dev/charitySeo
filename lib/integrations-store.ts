@@ -27,8 +27,8 @@ export const useIntegrationsStore = create<IntegrationsState>((set, get) => ({
     "google-business": [
       {
         id: "acc_1",
-        name: "CharitySEO HQ",
-        email: "admin@charityseo.com",
+        name: "Localmator HQ",
+        email: "support@localmator.com",
         active: true,
         dateConnected: new Date().toISOString(),
         platformId: "loc_12345",

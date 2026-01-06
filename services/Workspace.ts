@@ -103,4 +103,24 @@ export default class WorkspaceService {
       throw new Error("Failed to delete workspace");
     }
   }
+
+  static async setActive(id: number) {
+    const { token } = this.getAuthToken();
+    try {
+      const response = await axios.post(
+        `${baseUrl}/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to set active workspace");
+    }
+  }
 }

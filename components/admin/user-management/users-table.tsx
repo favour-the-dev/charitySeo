@@ -41,7 +41,7 @@ const MOCK_USERS: User[] = [
     status: "Active",
     subscriptions: {
       "Front End Pro": "Active",
-      "CharitySEO Unlimited": "Inactive",
+      "Localmator Unlimited": "Inactive",
     },
   },
   {
@@ -52,7 +52,7 @@ const MOCK_USERS: User[] = [
     status: "Active",
     subscriptions: {
       "Front End Pro": "Active",
-      "CharitySEO Agency": "Active",
+      "Localmator Agency": "Active",
     },
   },
 ];

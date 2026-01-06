@@ -169,7 +169,7 @@ export default function IndexedIntegrationPage() {
                   </p>
                 </div>
                 <div className="text-sm font-medium bg-background px-3 py-2 rounded border">
-                  support@charityseo.com
+                  support@localmator.com
                 </div>
               </div>
             </CardContent>

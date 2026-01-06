@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "react-hot-toast";
+import { GlobalLoader } from "@/components/ui/global-loader";
+import { AuthInit } from "@/components/auth-init";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CharitySEO Reviews Dashboard",
+  title: "Localmator Reviews Dashboard",
   description: "Manage customer reviews and feedback",
 };
 
@@ -35,6 +37,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AuthInit />
+          <GlobalLoader />
+
           {children}
           <Toaster position="bottom-right" />
         </ThemeProvider>

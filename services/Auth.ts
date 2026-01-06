@@ -43,4 +43,20 @@ export default class AuthService {
       console.error(error);
     }
   }
+
+  static async getMe() {
+    const { token } = this.getAuthToken();
+    try {
+      const response = await axios.get(`${base_Url}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to fetch user profile");
+    }
+  }
 }

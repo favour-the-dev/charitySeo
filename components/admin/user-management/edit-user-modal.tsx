@@ -29,12 +29,12 @@ interface EditUserModalProps {
 
 const SUBSCRIPTIONS = [
   "Front End Pro",
-  "CharitySEO Unlimited",
-  "CharitySEO Sales Converter",
-  "CharitySEO Media Studio",
-  "CharitySEO 25 Affiliate Offers",
-  "CharitySEO Agency",
-  "CharitySEO Reseller",
+  "Localmator Unlimited",
+  "Localmator Sales Converter",
+  "Localmator Media Studio",
+  "Localmator 25 Affiliate Offers",
+  "Localmator Agency",
+  "Localmator Reseller",
 ];
 
 export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {

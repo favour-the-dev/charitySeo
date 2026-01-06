@@ -21,7 +21,7 @@ export const mockReviews: Review[] = [
     customerEmail: "alice@example.com",
     rating: 5,
     content:
-      "CharitySEO helped us increase our visibility significantly. The team is amazing!",
+      "Localmator helped us increase our visibility significantly. The team is amazing!",
     date: "2023-10-25T10:00:00Z",
     status: "new",
     platform: "Google",

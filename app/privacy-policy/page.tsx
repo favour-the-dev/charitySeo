@@ -40,9 +40,9 @@ export default function PrivacyPolicyPage() {
                 1. Introduction
               </h2>
               <p className="leading-7">
-                At CharitySEO, we take your privacy seriously. This Privacy
-                Policy applies to our website www.charityseo.com and our
-                platform CharitySEO. This policy explains how CharitySEO
+                At Localmator, we take your privacy seriously. This Privacy
+                Policy applies to our website https://app.localmator.com/ and
+                our platform Localmator. This policy explains how Localmator
                 collects, uses and protects your Information, including data
                 that is personal to you and can identify you an as individual.
                 It also describes how you can access, update and delete your
@@ -61,13 +61,13 @@ export default function PrivacyPolicyPage() {
               <p className="leading-7">
                 If you have any questions about this Privacy Policy or our use
                 of the information you provide us, please email us at
-                privacy@charityseo.com or by mail to:
+                support@localmator.com or by mail to:
               </p>
               <div className="bg-muted p-4 rounded-lg text-sm">
                 <p className="font-medium">Attn: Privacy</p>
-                <p>CharitySEO</p>
-                <p>[Company Address Line 1]</p>
-                <p>[City, State, Zip Code]</p>
+                <p>Localmator</p>
+                <p>3568 Dodge Street</p>
+                <p>Omaha, NE 68131</p>
               </div>
             </section>
 
@@ -307,12 +307,12 @@ export default function PrivacyPolicyPage() {
                 Data Privacy officer can be contacted at the following address:
               </p>
               <div className="bg-muted p-4 rounded-lg text-sm">
-                <p className="font-medium">CharitySEO</p>
+                <p className="font-medium">Loacalmator</p>
                 <p>Attn: Data Privacy Officer</p>
-                <p>[Company Address Line 1]</p>
-                <p>[City, State, Zip Code]</p>
+                <p>3568 Dodge Street</p>
+                <p>Omaha, NE 68131</p>
                 <div className="mt-4">
-                  <p>Email: privacy@charityseo.com</p>
+                  <p>Email: support@loaclmator.com</p>
                   <p>Phone: [Phone Number]</p>
                 </div>
               </div>

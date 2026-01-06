@@ -79,7 +79,7 @@ export function Sidebar({ className, onNavigate, ...props }: SidebarProps) {
           className="flex items-center gap-2 font-semibold"
           onClick={onNavigate}
         >
-          <span className="text-xl font-bold text-primary">CharitySEO</span>
+          <span className="text-xl font-bold text-primary">Localmator</span>
         </Link>
       </div>
       <div className="flex-1 overflow-auto py-4">

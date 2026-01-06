@@ -69,9 +69,9 @@ export function CreateAgentModal({
           <div className="space-y-4 md:space-y-6">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold">C</span>
+                <span className="text-primary-foreground font-bold">L</span>
               </div>
-              <span className="font-bold text-lg">CharitySEO</span>
+              <span className="font-bold text-lg">Localmator</span>
             </div>
 
             <div className="rounded-lg overflow-hidden border bg-background shadow-sm hidden md:block">

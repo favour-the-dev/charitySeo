@@ -105,12 +105,12 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2069&auto=format&fit=crop')] bg-cover bg-center" />
         <div className="relative z-20 flex flex-col justify-between h-full p-10 text-white">
           <div className="flex items-center gap-2 font-bold text-xl">
-            CharitySEO
+            Localmator
           </div>
           <div className="space-y-4 max-w-lg">
             <Quote className="h-8 w-8 opacity-80" />
             <blockquote className="text-2xl font-medium leading-relaxed">
-              &quot;CharitySEO has completely transformed how we listen to our
+              &quot;Localmator has completely transformed how we listen to our
               donors and volunteers. The insights we get are invaluable.&quot;
             </blockquote>
             <div className="flex items-center gap-4 mt-4">

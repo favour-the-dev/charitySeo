@@ -37,11 +37,11 @@ export function SettingsForm() {
           <CardContent className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor="name">Organization Name</Label>
-              <Input id="name" defaultValue="CharitySEO" />
+              <Input id="name" defaultValue="Localmator" />
             </div>
             <div className="space-y-1">
               <Label htmlFor="website">Website URL</Label>
-              <Input id="website" defaultValue="https://charityseo.com" />
+              <Input id="website" defaultValue="https://app.localmator.com/" />
             </div>
           </CardContent>
           <CardFooter>
