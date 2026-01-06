@@ -40,13 +40,13 @@ export default function PrivacyPolicyPage() {
                 1. Introduction
               </h2>
               <p className="leading-7">
-                At Localmator, we take your privacy seriously. This Privacy
-                Policy applies to our website https://app.localmator.com/ and
-                our platform Localmator. This policy explains how Localmator
-                collects, uses and protects your Information, including data
-                that is personal to you and can identify you an as individual.
-                It also describes how you can access, update and delete your
-                personal information.
+                At NETSACH TECH LTD, we take your privacy seriously. This
+                Privacy Policy applies to our website
+                https://app.localmator.com/ and our platform Localmator. This
+                policy explains how Localmator collects, uses and protects your
+                Information, including data that is personal to you and can
+                identify you an as individual. It also describes how you can
+                access, update and delete your personal information.
               </p>
               <p className="leading-7">
                 We will post any privacy policy changes to this page.

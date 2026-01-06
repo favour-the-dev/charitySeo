@@ -39,9 +39,9 @@ export default function TermsOfServicePage() {
               <p className="leading-7">
                 This Terms of Service Agreement (“Agreement”) constitutes a
                 legally binding agreement made between you, whether personally
-                or on behalf of an entity (“Customer” or “you”) and Localmator
-                and its affiliated companies (collectively, “Company” or “we” or
-                “us” or “our”), concerning your access to and use of the
+                or on behalf of an entity (“Customer” or “you”) and NETSACH TECH
+                LTD and its affiliated companies (collectively, “Company” or
+                “we” or “us” or “our”), concerning your access to and use of the
                 Subscription Service (defined below). Supplemental terms and
                 conditions or documents that may be posted on our Website
                 (defined below) from time to time, are hereby expressly
