@@ -34,6 +34,7 @@ import { useUserStore } from "@/lib/user-store";
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next/client";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
 
 export function Header() {
   const { user: storedUser, clearUser } = useUserStore();
@@ -122,6 +123,13 @@ export function Header() {
                       <Check className="h-4 w-4" />
                     )}
                   </div>
+                  {/* <Image
+                    src={workspace.logo || "/workspace-default-logo.png"}
+                    alt={workspace.slug}
+                    width={16}
+                    height={16}
+                    className="mr-2 h-4 w-4 rounded-sm object-contain"
+                  /> */}
                   {workspace.name}
                 </DropdownMenuItem>
               ))}

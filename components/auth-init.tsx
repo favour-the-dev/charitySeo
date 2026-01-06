@@ -8,12 +8,16 @@ import { getCookie } from "cookies-next/client";
 
 export function AuthInit() {
   const { setUser } = useUserStore();
-  const { setWorkspaces, setActiveWorkspaceId } = useWorkspaceStore();
+  const { setWorkspaces, setActiveWorkspaceId, setIsInitializing } =
+    useWorkspaceStore();
 
   useEffect(() => {
     const initAuth = async () => {
       const token = getCookie("authToken");
-      if (!token) return;
+      if (!token) {
+        setIsInitializing(false);
+        return;
+      }
 
       try {
         const response = await AuthService.getMe();
@@ -40,11 +44,13 @@ export function AuthInit() {
         }
       } catch (error) {
         console.error("Failed to initialize auth:", error);
+      } finally {
+        setIsInitializing(false);
       }
     };
 
     initAuth();
-  }, [setUser, setWorkspaces, setActiveWorkspaceId]);
+  }, [setUser, setWorkspaces, setActiveWorkspaceId, setIsInitializing]);
 
   return null;
 }

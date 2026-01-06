@@ -97,6 +97,10 @@ export default function LoginPage() {
             <Link href="/terms-of-service" className="hover:underline">
               Terms of Service
             </Link>
+            {" · "}
+            <Link href="/refund-policy" className="hover:underline">
+              Refund Policy
+            </Link>
           </div>
         </div>
       </div>

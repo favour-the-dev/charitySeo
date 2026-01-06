@@ -4,9 +4,9 @@ import { useWorkspaceStore } from "@/lib/workspace-store";
 import { Loader2 } from "lucide-react";
 
 export function GlobalLoader() {
-  const { isLoading } = useWorkspaceStore();
+  const { isLoading, isInitializing } = useWorkspaceStore();
 
-  if (!isLoading) return null;
+  if (!isLoading && !isInitializing) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">

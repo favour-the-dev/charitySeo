@@ -17,6 +17,7 @@ interface WorkspaceState {
   teamMembers: TeamMemberType[];
   activeWorkspaceId: number | null;
   isLoading: boolean;
+  isInitializing: boolean;
   error: string | null;
 
   fetchWorkspaces: () => Promise<void>;
@@ -26,6 +27,7 @@ interface WorkspaceState {
   setActiveWorkspace: (id: number) => Promise<void>;
   setWorkspaces: (workspaces: Workspace[]) => void;
   setActiveWorkspaceId: (id: number) => void;
+  setIsInitializing: (isInitializing: boolean) => void;
 
   fetchTeamMembers: () => Promise<void>;
   createTeamMember: (data: CreateTeamMemberRequest) => Promise<void>;
@@ -38,7 +40,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   teamMembers: [],
   activeWorkspaceId: null,
   isLoading: false,
+  isInitializing: true,
   error: null,
+
+  setIsInitializing: (isInitializing) => set({ isInitializing }),
 
   fetchWorkspaces: async () => {
     set({ isLoading: true, error: null });
