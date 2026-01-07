@@ -34,7 +34,8 @@ import { useUserStore } from "@/lib/user-store";
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next/client";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
+// import Image from "next/image";
+import LanguageSelector from "../language-selector";
 
 export function Header() {
   const { user: storedUser, clearUser } = useUserStore();
@@ -178,7 +179,8 @@ export function Header() {
       />
 
       <div className="ml-2 flex items-center gap-2 sm:gap-4 shrink-0">
-        <DropdownMenu>
+        <LanguageSelector />
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <Globe className="h-5 w-5" />
@@ -201,7 +203,7 @@ export function Header() {
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
         <Button variant="ghost" size="icon">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>

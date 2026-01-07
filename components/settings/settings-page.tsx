@@ -42,6 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useUserStore } from "@/lib/user-store";
+import UserService from "@/services/User";
 
 export default function SettingsPageComponent() {
   const searchParams = useSearchParams();
@@ -72,12 +73,27 @@ export default function SettingsPageComponent() {
     isLoading,
   } = useWorkspaceStore();
 
-  const { user } = useUserStore();
+  const { user, updateUser } = useUserStore();
+
+  const [fullName, setFullName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [isConfirmNameOpen, setIsConfirmNameOpen] = useState(false);
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+
+  const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     fetchWorkspaces();
     fetchTeamMembers();
   }, [fetchWorkspaces, fetchTeamMembers]);
+
+  useEffect(() => {
+    setFullName(
+      user ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() : ""
+    );
+    setEmail(user?.email ?? "");
+  }, [user]);
 
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>("");
 
@@ -91,11 +107,55 @@ export default function SettingsPageComponent() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
-  const handleSave = () => {
-    toast.success("Settings saved successfully!");
+  const openConfirmName = () => {
+    const next = fullName.trim();
+    if (!next) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+    setIsConfirmNameOpen(true);
   };
 
-  const handlePasswordChange = () => {
+  const handleConfirmNameUpdate = async () => {
+    const next = fullName.trim();
+    if (!next) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+
+    const parts = next.split(/\s+/).filter(Boolean);
+    const nextFirstName = parts[0] ?? "";
+    const nextLastName =
+      parts.length > 1 ? parts.slice(1).join(" ") : user?.last_name ?? "";
+
+    setIsUpdatingName(true);
+    try {
+      const res = await UserService.UpdateUserName({
+        first_name: nextFirstName,
+        last_name: nextLastName,
+      });
+
+      // Keep local state and store in sync
+      updateUser({
+        first_name: res.user?.first_name ?? nextFirstName,
+        last_name: res.user?.last_name ?? nextLastName,
+      });
+      setFullName(
+        `${res.user?.first_name ?? nextFirstName} ${
+          res.user?.last_name ?? nextLastName
+        }`.trim()
+      );
+
+      toast.success(res.message || "Profile updated successfully");
+      setIsConfirmNameOpen(false);
+    } catch (error) {
+      toast.error("Failed to update name");
+    } finally {
+      setIsUpdatingName(false);
+    }
+  };
+
+  const openConfirmPassword = () => {
     if (newPassword !== confirmNewPassword) {
       toast.error("Passwords do not match");
       return;
@@ -104,10 +164,35 @@ export default function SettingsPageComponent() {
       toast.error("Password cannot be empty");
       return;
     }
-    // Simulate API call
-    toast.success("Password changed successfully!");
-    setNewPassword("");
-    setConfirmNewPassword("");
+    setIsConfirmPasswordOpen(true);
+  };
+
+  const handleConfirmPasswordUpdate = async () => {
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (!newPassword) {
+      toast.error("Password cannot be empty");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const res = await UserService.UpdateUserPassword({
+        password: newPassword,
+        password_confirmation: confirmNewPassword,
+      });
+
+      toast.success(res.message || "Password updated successfully");
+      setIsConfirmPasswordOpen(false);
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (error) {
+      toast.error("Failed to update password");
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
   const handleDeleteWorkspace = async () => {
     if (!deletingWorkspace) return;
@@ -179,14 +264,18 @@ export default function SettingsPageComponent() {
                   <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
-                    defaultValue={
-                      user ? `${user.first_name} ${user.last_name}` : ""
-                    }
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                   />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" defaultValue={user?.email || ""} />
+                  <Input
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="role">Role</Label>
@@ -198,7 +287,9 @@ export default function SettingsPageComponent() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSave}>Save Changes</Button>
+                <Button onClick={openConfirmName} disabled={isUpdatingName}>
+                  {isUpdatingName ? "Saving..." : "Save Changes"}
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -340,7 +431,12 @@ export default function SettingsPageComponent() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handlePasswordChange}>Update Password</Button>
+                <Button
+                  onClick={openConfirmPassword}
+                  disabled={isUpdatingPassword}
+                >
+                  {isUpdatingPassword ? "Updating..." : "Update Password"}
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -489,6 +585,30 @@ export default function SettingsPageComponent() {
         title="Delete Team Member"
         description={`Are you sure you want to delete "${deletingTeamMember?.first_name} ${deletingTeamMember?.last_name}"? This action cannot be undone.`}
         onConfirm={handleDeleteTeamMember}
+      />
+
+      <ConfirmDialog
+        open={isConfirmNameOpen}
+        onOpenChange={setIsConfirmNameOpen}
+        title="Confirm Profile Update"
+        description={`Are you sure you want to update your name to "${fullName.trim()}"?`}
+        onConfirm={handleConfirmNameUpdate}
+        isLoading={isUpdatingName}
+        confirmText="Update Name"
+        confirmVariant="default"
+        loadingText="Updating..."
+      />
+
+      <ConfirmDialog
+        open={isConfirmPasswordOpen}
+        onOpenChange={setIsConfirmPasswordOpen}
+        title="Confirm Password Update"
+        description="Are you sure you want to update your password?"
+        onConfirm={handleConfirmPasswordUpdate}
+        isLoading={isUpdatingPassword}
+        confirmText="Update Password"
+        confirmVariant="default"
+        loadingText="Updating..."
       />
     </DashboardLayout>
   );

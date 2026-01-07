@@ -9,8 +9,6 @@ import TeamMemberService, {
   UpdateTeamMemberRequest,
 } from "@/services/TeamMember";
 import { UserWorkspace, TeamMemberType } from "@/types/types";
-import { AddTeamMemberResponse } from "@/types/types";
-
 export type Role = "Client" | "Administrator" | "Manager" | string;
 
 type teamMemberResponse = {
@@ -18,6 +16,7 @@ type teamMemberResponse = {
   message: string;
   errors?: Record<string, string[]>;
 };
+
 interface WorkspaceState {
   workspaces: Workspace[];
   teamMembers: TeamMemberType[];
@@ -34,7 +33,6 @@ interface WorkspaceState {
   setWorkspaces: (workspaces: Workspace[]) => void;
   setActiveWorkspaceId: (id: number) => void;
   setIsInitializing: (isInitializing: boolean) => void;
-
   fetchTeamMembers: () => Promise<void>;
   createTeamMember: (
     data: CreateTeamMemberRequest

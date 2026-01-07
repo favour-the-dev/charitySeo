@@ -19,28 +19,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "react-hot-toast";
-import { Seller } from "./sellers-page";
+import { AddResellerPayload } from "@/services/Reseller";
+import { Loader2 } from "lucide-react";
 
 interface CreateSellerModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddSeller: (seller: Omit<Seller, "id">) => void;
+  onAddSeller: (seller: AddResellerPayload) => Promise<void>;
+  isLoading: boolean;
 }
 
 export function CreateSellerModal({
   open,
   onOpenChange,
   onAddSeller,
+  isLoading,
 }: CreateSellerModalProps) {
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<"Active" | "Inactive">("Active");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       toast.error("All fields are required");
       return;
     }
@@ -49,17 +53,19 @@ export function CreateSellerModal({
       return;
     }
 
-    onAddSeller({
-      name,
+    await onAddSeller({
+      first_name: firstName,
+      last_name: lastName,
       email,
-      status,
+      password,
+      is_active: status === "Active",
     });
 
-    toast.success("Reseller added successfully");
     onOpenChange(false);
 
     // Reset form
-    setName("");
+    setFirstName("");
+    setLastName("");
     setEmail("");
     setPassword("");
     setConfirmPassword("");
@@ -75,12 +81,21 @@ export function CreateSellerModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="firstName">First Name</Label>
               <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 placeholder="John"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Doe"
               />
             </div>
           </div>
@@ -128,7 +143,10 @@ export function CreateSellerModal({
             </Select>
           </div>
           <DialogFooter>
-            <Button type="submit">Add Reseller</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Add Reseller
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

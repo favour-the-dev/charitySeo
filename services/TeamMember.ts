@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getCookie } from "cookies-next/client";
-import { AddTeamMemberResponse } from "@/types/types";
+
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/team`;
 
 export interface TeamMember {

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "react-hot-toast";
 import { GlobalLoader } from "@/components/ui/global-loader";
 import { AuthInit } from "@/components/auth-init";
+import GoogleTranslate from "@/components/google-translate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <GoogleTranslate />
           <AuthInit />
           <GlobalLoader />
 

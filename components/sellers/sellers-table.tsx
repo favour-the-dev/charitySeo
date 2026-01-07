@@ -9,19 +9,21 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
-import { Seller } from "./sellers-page";
 import { Badge } from "@/components/ui/badge";
+import { User } from "@/types/types";
 
 interface SellersTableProps {
-  sellers: Seller[];
-  onDelete: (id: string) => void;
-  onUpdate: (id: string, data: Partial<Seller>) => void;
+  sellers: User[];
+  onDelete: (id: number) => void;
+  onToggleStatus: (user: User) => void;
+  onEdit: (user: User) => void;
 }
 
 export function SellersTable({
   sellers,
   onDelete,
-  onUpdate,
+  onToggleStatus,
+  onEdit,
 }: SellersTableProps) {
   return (
     <div className="rounded-md border">
@@ -37,27 +39,26 @@ export function SellersTable({
         <TableBody>
           {sellers.map((seller) => (
             <TableRow key={seller.id}>
-              <TableCell>{seller.name}</TableCell>
+              <TableCell>
+                {seller.first_name} {seller.last_name}
+              </TableCell>
               <TableCell>{seller.email}</TableCell>
               <TableCell>
-                <Badge
-                  variant={seller.status === "Active" ? "default" : "secondary"}
+                <div
+                  className="cursor-pointer inline-block"
+                  onClick={() => onToggleStatus(seller)}
                 >
-                  {seller.status}
-                </Badge>
+                  <Badge variant={seller.is_active ? "default" : "secondary"}>
+                    {seller.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => {
-                      // For now just toggle status as an "Edit" action or similar
-                      onUpdate(seller.id, {
-                        status:
-                          seller.status === "Active" ? "Inactive" : "Active",
-                      });
-                    }}
+                    onClick={() => onEdit(seller)}
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -76,7 +77,7 @@ export function SellersTable({
           {sellers.length === 0 && (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={4}
                 className="text-center h-24 text-muted-foreground"
               >
                 No resellers found.

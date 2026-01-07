@@ -213,3 +213,33 @@ export interface AddTeamMemberResponse {
     [key: string]: string[];
   };
 }
+
+// update user name
+export interface UpdateUserNameResponse {
+  status: string;
+  message: string;
+  user: User;
+}
+
+export interface UpdateUserPasswordResponse {
+  status: string;
+  message: string;
+}
+
+// resellers
+
+export interface getAllResellersResponse {
+  status: string;
+  page: string;
+  workspace: Workspace;
+  users: User[];
+  sumOfUsers: number;
+  sumOfUsersToday: number;
+  sumOfUsersThisWeek: number;
+}
+
+export interface ResellerResponse {
+  status: string;
+  message: string;
+  user: User;
+}

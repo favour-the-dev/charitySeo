@@ -2,23 +2,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, TrendingUp } from "lucide-react";
 
-interface Seller {
-  id: string;
-  name: string;
-  email: string;
-  status: string;
-}
-
 interface SellersStatsProps {
-  sellers: Seller[];
+  totalUsers: number;
+  newUsersToday: number;
+  newUsersThisWeek: number;
 }
 
-export function SellersStats({ sellers }: SellersStatsProps) {
-  // Simulated stats
-  const totalUsers = sellers.length * 15 + 120; // Just some fake math based on sellers
-  const newUsersToday = 12;
-  const newUsersThisWeek = 45;
-
+export function SellersStats({
+  totalUsers,
+  newUsersToday,
+  newUsersThisWeek,
+}: SellersStatsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card>
@@ -38,7 +32,7 @@ export function SellersStats({ sellers }: SellersStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">+{newUsersToday}</div>
-          <p className="text-xs text-muted-foreground">+10% from yesterday</p>
+          <p className="text-xs text-muted-foreground">Today's new users</p>
         </CardContent>
       </Card>
       <Card>
@@ -50,7 +44,7 @@ export function SellersStats({ sellers }: SellersStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">+{newUsersThisWeek}</div>
-          <p className="text-xs text-muted-foreground">+5% from last week</p>
+          <p className="text-xs text-muted-foreground">Includes today</p>
         </CardContent>
       </Card>
     </div>
