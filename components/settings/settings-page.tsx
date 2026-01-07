@@ -148,8 +148,8 @@ export default function SettingsPageComponent() {
 
       toast.success(res.message || "Profile updated successfully");
       setIsConfirmNameOpen(false);
-    } catch (error) {
-      toast.error("Failed to update name");
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to update name");
     } finally {
       setIsUpdatingName(false);
     }
@@ -188,8 +188,13 @@ export default function SettingsPageComponent() {
       setIsConfirmPasswordOpen(false);
       setNewPassword("");
       setConfirmNewPassword("");
-    } catch (error) {
-      toast.error("Failed to update password");
+    } catch (error: any) {
+      console.log(error);
+      const errorMessage =
+        error?.response?.data?.errors?.password?.[0] ||
+        error?.response?.data?.message ||
+        "Failed to update password";
+      toast.error(errorMessage);
     } finally {
       setIsUpdatingPassword(false);
     }

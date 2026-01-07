@@ -224,6 +224,9 @@ export interface UpdateUserNameResponse {
 export interface UpdateUserPasswordResponse {
   status: string;
   message: string;
+  errors?: {
+    [key: string]: string[];
+  };
 }
 
 // resellers

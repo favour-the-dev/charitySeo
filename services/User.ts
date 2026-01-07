@@ -37,11 +37,13 @@ export default class UserService {
       return data;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to update user name");
+      throw error;
     }
   }
 
-  static async UpdateUserPassword(payload: updatePasswordPayload) {
+  static async UpdateUserPassword(
+    payload: updatePasswordPayload
+  ): Promise<UpdateUserPasswordResponse> {
     const { token } = this.getAuthToken();
     try {
       const response = await axios.post(`${baseUrl}/update-password`, payload, {
@@ -51,9 +53,9 @@ export default class UserService {
       });
       const data: UpdateUserPasswordResponse = response.data;
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      throw new Error("Failed to update user password");
+      throw error;
     }
   }
 }
