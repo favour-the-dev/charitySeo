@@ -132,12 +132,13 @@ export default function LanguageSelector() {
         <Button
           variant="outline"
           className="w-[140px] justify-between shadow-none"
-          disabled={!isReady}
-          title={isReady ? "Change language" : "Loading translator..."}
+          title="Change language"
         >
           <span className="flex items-center gap-2">
             <span className="text-base">{currentLanguage.flag}</span>
-            <span className="truncate">{currentLanguage.name}</span>
+            <span className="truncate hidden md:block">
+              {currentLanguage.name}
+            </span>
           </span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>

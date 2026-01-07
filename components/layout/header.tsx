@@ -35,6 +35,7 @@ import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next/client";
 import { toast } from "react-hot-toast";
 // import Image from "next/image";
+import GoogleTranslate from "../google-translate";
 import LanguageSelector from "../language-selector";
 
 export function Header() {
@@ -179,6 +180,7 @@ export function Header() {
       />
 
       <div className="ml-2 flex items-center gap-2 sm:gap-4 shrink-0">
+        <GoogleTranslate />
         <LanguageSelector />
         {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
