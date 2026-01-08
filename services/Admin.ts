@@ -62,6 +62,10 @@ export default class AdminService {
   ): Promise<UpdateUserResponse> {
     try {
       const { token } = this.getAuthToken();
+      // Remove password from payload if it's empty to avoid accidental overwrites or backend validation errors
+      // if the backend uses the same endpoint. But here we have specific endpoints.
+      // Based on type, it's there, but let's see.
+
       const response = await axios.put(
         `${baseUrl}/users/update/details`,
         payload,
@@ -85,7 +89,7 @@ export default class AdminService {
   ): Promise<{ status: string; message: string }> {
     try {
       const { token } = this.getAuthToken();
-      const response = await axios.delete(`${baseUrl}/users/delete`, {
+      const response = await axios.post(`${baseUrl}/users/delete`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -179,7 +183,7 @@ export default class AdminService {
     try {
       const { token } = this.getAuthToken();
       const res = await axios.post(
-        `${baseUrl}admin/users/update/password`,
+        `${baseUrl}/users/update/password`,
         payload,
         {
           headers: {

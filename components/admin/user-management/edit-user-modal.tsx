@@ -2,7 +2,12 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import AdminService from "@/services/Admin";
-import { User, udpateUserPayload } from "@/types/types";
+import {
+  User,
+  udpateUserPayload,
+  UpdateUserSubscriptionsPayload,
+  updateUserPasswordPayload,
+} from "@/types/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,15 +35,18 @@ interface EditUserModalProps {
   user: User | null;
 }
 
-const SUBSCRIPTIONS = [
-  "Front End Pro",
-  "Localmator Unlimited",
-  "Localmator Sales Converter",
-  "Localmator Media Studio",
-  "Localmator 25 Affiliate Offers",
-  "Localmator Agency",
-  "Localmator Reseller",
-];
+const SUBSCRIPTION_MAP = {
+  "Front End Pro": "front_end",
+  "Localmator Unlimited": "viralgenius_unlimited",
+  "Localmator Sales Converter": "viralgenius_sales_converter",
+  "Localmator Media Studio": "viralgenius_media_studio",
+  "Localmator 25 Affiliate Offers": "viralgenius_affiliate_offer",
+  "Localmator Agency": "viralgenius_agency",
+  "Localmator Reseller": "reseller",
+} as const satisfies Record<string, keyof User["subscriptions"]>;
+
+type SubscriptionLabel = keyof typeof SUBSCRIPTION_MAP;
+type SubscriptionKey = keyof User["subscriptions"];
 
 export function EditUserModal({
   isOpen,
@@ -49,6 +57,40 @@ export function EditUserModal({
   const [activeTab, setActiveTab] = useState("details");
   const [isLoading, setIsLoading] = useState(false);
 
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === "object" && value !== null && !Array.isArray(value);
+
+  const getApiErrorMessage = (error: unknown, fallback: string) => {
+    const maybeError = error as {
+      response?: { data?: unknown };
+      message?: unknown;
+    };
+    const data = maybeError.response?.data;
+
+    if (
+      isRecord(data) &&
+      typeof data.message === "string" &&
+      data.message.trim()
+    ) {
+      return data.message;
+    }
+
+    if (isRecord(data) && isRecord(data.errors)) {
+      const firstKey = Object.keys(data.errors)[0];
+      const firstVal = firstKey ? data.errors[firstKey] : undefined;
+      if (Array.isArray(firstVal) && typeof firstVal[0] === "string")
+        return firstVal[0];
+      if (typeof firstVal === "string") return firstVal;
+    }
+
+    if (typeof maybeError.message === "string" && maybeError.message.trim()) {
+      return maybeError.message;
+    }
+
+    return fallback;
+  };
+
+  // Form states
   const [formData, setFormData] = useState<Omit<udpateUserPayload, "id">>({
     first_name: "",
     last_name: "",
@@ -58,8 +100,19 @@ export function EditUserModal({
     password: "",
   });
 
+  const [passwordData, setPasswordData] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [subscriptionData, setSubscriptionData] = useState<
+    Partial<Record<SubscriptionKey, boolean>>
+  >({});
+
   useEffect(() => {
+    if (isOpen) setActiveTab("details");
     if (user) {
+      // 1. Details
       setFormData({
         first_name: user.first_name || "",
         last_name: user.last_name || "",
@@ -68,39 +121,139 @@ export function EditUserModal({
         is_active: !!user.is_active,
         password: "",
       });
+
+      // 2. Subscriptions
+      // Map user subscriptions to our local state
+      const newSubs: Partial<Record<SubscriptionKey, boolean>> = {};
+      (Object.keys(SUBSCRIPTION_MAP) as SubscriptionLabel[]).forEach(
+        (label) => {
+          const key = SUBSCRIPTION_MAP[label];
+          const sub = user.subscriptions[key];
+          newSubs[key] = !!sub?.status;
+        }
+      );
+      setSubscriptionData(newSubs);
+
+      // 3. Password reset
+      setPasswordData({ password: "", confirmPassword: "" });
     }
-  }, [user]);
+  }, [user, isOpen]);
 
   const handleSave = async () => {
     if (!user) return;
-
-    if (formData.password && formData.password) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
     setIsLoading(true);
+
     try {
-      const { ...data } = formData;
-      const payload: udpateUserPayload = {
-        id: typeof user.id === "string" ? parseInt(user.id) : user.id,
-        ...data,
-      };
-
-      const response = await AdminService.updateUser(payload);
-
-      if (response.status === "success") {
-        toast.success("User updated successfully");
-        if (onUserUpdated) onUserUpdated();
-        onClose();
-      } else {
-        toast.error(response.message || "Failed to update user");
+      // 1. Update Details
+      if (activeTab === "details") {
+        const payload: udpateUserPayload = {
+          id: user.id,
+          first_name: formData.first_name.trim(),
+          last_name: formData.last_name.trim(),
+          email: formData.email,
+          role: formData.role,
+          is_active: !!formData.is_active,
+        };
+        const response = await AdminService.updateUser(payload);
+        if (response.status === "success") {
+          toast.success(
+            response.message || "User details updated successfully"
+          );
+          if (onUserUpdated) onUserUpdated();
+          onClose();
+          return;
+        }
+        toast.error(response.message || "Failed to update user details");
+        return;
       }
-    } catch (error: any) {
+
+      // 2. Update Subscriptions
+      else if (activeTab === "subscriptions") {
+        // Construct payload
+        // Note: The payload structure in types.ts is nested: { subscriptions: { [key]: { id, status } } }
+        // But we only have flat status here. We might need IDs if the API requires them.
+        // types.ts says: subscriptions: { front_end: { id: number, status: boolean } ... }
+        // We need to try to preserve IDs from the original user object if possible.
+
+        const subsPayload: UpdateUserSubscriptionsPayload["subscriptions"] = {
+          front_end: {
+            id: Number(user.subscriptions.front_end?.id) || 0,
+            status: !!subscriptionData.front_end,
+          },
+          viralgenius_unlimited: {
+            id: Number(user.subscriptions.viralgenius_unlimited?.id) || 0,
+            status: !!subscriptionData.viralgenius_unlimited,
+          },
+          viralgenius_media_studio: {
+            id: Number(user.subscriptions.viralgenius_media_studio?.id) || 0,
+            status: !!subscriptionData.viralgenius_media_studio,
+          },
+          reseller: {
+            id: Number(user.subscriptions.reseller?.id) || 0,
+            status: !!subscriptionData.reseller,
+          },
+          viralgenius_agency: {
+            id: Number(user.subscriptions.viralgenius_agency?.id) || 0,
+            status: !!subscriptionData.viralgenius_agency,
+          },
+          viralgenius_affiliate_offer: {
+            id: Number(user.subscriptions.viralgenius_affiliate_offer?.id) || 0,
+            status: !!subscriptionData.viralgenius_affiliate_offer,
+          },
+          viralgenius_sales_converter: {
+            id: Number(user.subscriptions.viralgenius_sales_converter?.id) || 0,
+            status: !!subscriptionData.viralgenius_sales_converter,
+          },
+        };
+
+        const payload: UpdateUserSubscriptionsPayload = {
+          user_id: user.id,
+          subscriptions: subsPayload,
+        };
+
+        const res = await AdminService.updateUserSubscriptions(payload);
+        if (res.status === "success") {
+          toast.success(res.message || "Subscriptions updated successfully");
+          if (onUserUpdated) onUserUpdated();
+          onClose();
+          return;
+        }
+        toast.error(res.message || "Failed to update subscriptions");
+        return;
+      }
+
+      // 3. Update Password
+      else if (activeTab === "password") {
+        if (!passwordData.password) {
+          toast.error("Password cannot be empty");
+          return;
+        }
+        if (passwordData.password !== passwordData.confirmPassword) {
+          toast.error("Passwords do not match");
+          return;
+        }
+
+        const payload: updateUserPasswordPayload = {
+          user_id: user.id,
+          password: passwordData.password,
+          password_confirmation: passwordData.confirmPassword,
+        };
+
+        const res = await AdminService.updateUserPassword(payload);
+        if (res.status === "success") {
+          toast.success(res.message || "Password updated successfully");
+          setPasswordData({ password: "", confirmPassword: "" });
+          if (onUserUpdated) onUserUpdated();
+          onClose();
+          return;
+        }
+
+        toast.error(res.message || "Failed to update password");
+        return;
+      }
+    } catch (error: unknown) {
       console.error("Error updating user:", error);
-      const errorMessage =
-        error?.response?.data?.message || "Failed to update user";
-      toast.error(errorMessage);
+      toast.error(getApiErrorMessage(error, "Failed to update user"));
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +263,7 @@ export function EditUserModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit User Account</DialogTitle>
           <DialogDescription>
@@ -205,34 +358,44 @@ export function EditUserModal({
           </TabsContent>
 
           <TabsContent value="subscriptions" className="space-y-4 py-4">
-            <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md mb-2 text-sm border border-yellow-200">
-              Subscription updates are not supported in this version.
-            </div>
-            <div className="space-y-4 p-4 h-[300px] overflow-y-auto opacity-50 pointer-events-none">
-              {SUBSCRIPTIONS.map((sub) => (
-                <div
-                  key={sub}
-                  className="flex items-center justify-between border-b pb-2 last:border-0"
-                >
-                  <Label className="text-base">{sub}</Label>
-                  <Select value="Inactive" disabled>
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Active" className="text-green-600">
-                        Active
-                      </SelectItem>
-                      <SelectItem
-                        value="Inactive"
-                        className="text-muted-foreground"
+            <div className="space-y-4 p-4 h-75 overflow-y-auto">
+              {(Object.keys(SUBSCRIPTION_MAP) as SubscriptionLabel[]).map(
+                (label) => {
+                  const key = SUBSCRIPTION_MAP[label];
+                  return (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between border-b pb-2 last:border-0"
+                    >
+                      <Label className="text-base">{label}</Label>
+                      <Select
+                        value={subscriptionData[key] ? "Active" : "Inactive"}
+                        onValueChange={(val) =>
+                          setSubscriptionData((prev) => ({
+                            ...prev,
+                            [key]: val === "Active",
+                          }))
+                        }
                       >
-                        Inactive
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
+                        <SelectTrigger className="w-30">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Active" className="text-green-600">
+                            Active
+                          </SelectItem>
+                          <SelectItem
+                            value="Inactive"
+                            className="text-muted-foreground"
+                          >
+                            Inactive
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                }
+              )}
             </div>
           </TabsContent>
 
@@ -242,9 +405,23 @@ export function EditUserModal({
               <Input
                 id="newPassword"
                 type="password"
-                value={formData.password}
+                value={passwordData.password}
                 onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
+                  setPasswordData({ ...passwordData, password: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    confirmPassword: e.target.value,
+                  })
                 }
               />
             </div>

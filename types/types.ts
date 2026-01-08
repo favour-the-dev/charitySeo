@@ -340,7 +340,7 @@ export interface udpateUserPayload {
   first_name: string;
   last_name: string;
   email: string;
-  password: string;
+  password?: string;
   role: string;
   is_active: boolean;
 }
@@ -363,6 +363,16 @@ export interface UpdateUserSubscriptionsPayload {
       limit?: number;
     };
     viralgenius_unlimited: {
+      id: number;
+      status: boolean;
+      limit?: number;
+    };
+    viralgenius_affiliate_offer?: {
+      id: number;
+      status: boolean;
+      limit?: number;
+    };
+    viralgenius_sales_converter?: {
       id: number;
       status: boolean;
       limit?: number;

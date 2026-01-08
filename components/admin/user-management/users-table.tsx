@@ -39,6 +39,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "react-hot-toast";
+import AdminService from "@/services/Admin";
 
 interface UsersTableProps {
   searchQuery?: string;
@@ -93,12 +94,45 @@ export function UsersTable({
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (selectedUser) {
-      setLocalUsers(localUsers.filter((u) => u.id !== selectedUser.id));
-      toast.success("User deleted successfully");
+      try {
+        await AdminService.deleteUser(selectedUser.id);
+        setLocalUsers(localUsers.filter((u) => u.id !== selectedUser.id));
+        toast.success("User deleted successfully");
+        if (onDataChange) onDataChange();
+      } catch (error) {
+        toast.error("Failed to delete user");
+      }
       setIsDeleteModalOpen(false);
       setSelectedUser(null);
+    }
+  };
+
+  const handleToggleStatus = async (user: UserType) => {
+    try {
+      const isCurrentlyActive = !!user.is_active;
+      if (isCurrentlyActive) {
+        await AdminService.deactivateUser(user.id);
+      } else {
+        await AdminService.activateUser(user.id);
+      }
+
+      const newStatus = isCurrentlyActive ? 0 : 1;
+      setLocalUsers(
+        localUsers.map((u) =>
+          u.id === user.id ? { ...u, is_active: newStatus } : u
+        )
+      );
+      toast.success(
+        `User ${newStatus ? "activated" : "deactivated"} successfully`
+      );
+      if (onDataChange) onDataChange();
+    } catch (error) {
+      const message =
+        (error as any)?.response?.data?.message ||
+        "Failed to update user status";
+      toast.error(message);
     }
   };
 
@@ -176,6 +210,20 @@ export function UsersTable({
                       >
                         <Trash className="h-4 w-4 text-destructive" />
                       </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleToggleStatus(user)}
+                          >
+                            {user.is_active ? "Deactivate" : "Activate"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -231,7 +279,7 @@ export function UsersTable({
       />
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
@@ -255,7 +303,7 @@ export function UsersTable({
       </Dialog>
 
       <Dialog open={isSubsModalOpen} onOpenChange={setIsSubsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-106.25 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Active Subscriptions</DialogTitle>
             <DialogDescription>
