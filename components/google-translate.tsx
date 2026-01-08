@@ -1,7 +1,28 @@
 "use client";
 import Script from "next/script";
+import { useEffect, useState } from "react";
 
 export default function GoogleTranslate() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Remove the Google Translate iframe from the DOM when it appears
+    // const observer = new MutationObserver(() => {
+    //   const iframe = document.querySelector(".goog-te-banner-frame");
+    //   if (iframe) {
+    //     iframe.remove();
+    //     document.body.style.top = "0px";
+    //   }
+    // });
+
+    // observer.observe(document.body, { childList: true, subtree: true });
+
+    // return () => observer.disconnect();
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <>
       {/* Init function */}
@@ -12,7 +33,7 @@ export default function GoogleTranslate() {
                 { 
                     pageLanguage: 'en',
                     includedLanguages: 'en,es,fr,de,zh-CN,ja,ar,pt,ru,hi,it,ko,tr,vi,pl,nl,id,th,sv,uk,da,fi,no,el,cs,ro,hu',
-                    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                    layout: google.translate.TranslateElement.InlineLayout.VERTICAL,
                     autoDisplay: false,
                     multilanguagePage: true
                 },
@@ -27,7 +48,7 @@ export default function GoogleTranslate() {
         strategy="afterInteractive"
       />
       {/* Placeholder */}
-      <div id="google_translate_element" style={{ display: "none" }} />
+      <div id="google_translate_element" style={{ height: "25px" }} />
     </>
   );
 }

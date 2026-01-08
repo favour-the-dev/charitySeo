@@ -21,7 +21,7 @@ import {
 import { useWorkspaceStore, Role } from "@/lib/workspace-store";
 import { toast } from "react-hot-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import { Loader2 } from "lucide-react";
 interface CreateTeamMemberModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,7 +31,8 @@ export function CreateTeamMemberModal({
   open,
   onOpenChange,
 }: CreateTeamMemberModalProps) {
-  const { workspaces, createTeamMember } = useWorkspaceStore();
+  const { workspaces, createTeamMember, fetchTeamMembers, isLoading } =
+    useWorkspaceStore();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,11 +47,6 @@ export function CreateTeamMemberModal({
       toast.error("All fields are required");
       return;
     }
-    // if (password.length < 8) {
-    //   toast.error("Password must be at least 8 characters long");
-    //   return;
-    // }
-
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -59,7 +55,6 @@ export function CreateTeamMemberModal({
       toast.error("Please select at least one workspace");
       return;
     }
-
     const res = await createTeamMember({
       first_name: firstName,
       last_name: lastName,
@@ -69,22 +64,12 @@ export function CreateTeamMemberModal({
       user_access: selectedWorkspaces.map((id) => ({ id, has_access: true })),
     });
 
-    console.log("res", res);
-
-    // if (res.status === "success") {
-    //   toast.success("Team member added successfully");
-    // } else {
-    //   toast.error(`${res.message}`);
-    // }
     if (res.status === "error" && res.errors) {
       Object.entries(res.errors).forEach(([field, messages]) => {
         toast.error(`${field}: ${messages.join(", ")}`);
       });
-
-      onOpenChange(true);
     } else if (res.status === "success") {
       onOpenChange(false);
-      // Reset form
       setFirstName("");
       setLastName("");
       setEmail("");
@@ -92,6 +77,8 @@ export function CreateTeamMemberModal({
       setPassword("");
       setConfirmPassword("");
       setSelectedWorkspaces([]);
+      await fetchTeamMembers();
+      toast.success(res.message);
     }
   };
 
@@ -187,7 +174,10 @@ export function CreateTeamMemberModal({
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Add Member</Button>
+            <Button type="submit">
+              {isLoading ? "Adding Memmber..." : "Add Member"}
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -125,7 +125,7 @@ export interface LoginResponse {
 }
 
 // worspace
-interface Workspace {
+export interface Workspace {
   created_at: string;
   id: number;
   is_default: boolean;
@@ -145,6 +145,7 @@ export interface UserWorkspace {
   user_id: number;
   user_role: string;
   work_space_id: number;
+  is_active: number;
   workspace: Workspace;
 }
 
@@ -157,6 +158,28 @@ interface ActiveWorkspace {
   logo: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateWorkspacePayload {
+  name: string;
+  slug: string;
+  is_default: number;
+  logo?: File | string;
+}
+
+export interface createWorkspaceResponse {
+  status: string;
+  message: string;
+  workspace?: Workspace;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+export interface UpdateWorkspacePayload {
+  id: number;
+  name: string;
+  slug: string;
+  is_default: number;
 }
 
 interface SubscriptionDetails {
@@ -230,7 +253,6 @@ export interface UpdateUserPasswordResponse {
 }
 
 // resellers
-
 export interface getAllResellersResponse {
   status: string;
   page: string;
@@ -245,4 +267,126 @@ export interface ResellerResponse {
   status: string;
   message: string;
   user: User;
+}
+
+// admin user types
+export interface getAdminDashboardResponse {
+  status: string;
+  stats: {
+    total_users: number;
+    users_today: number;
+    users_this_week: number;
+  };
+  users: {
+    current_page: number;
+    data: User[];
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    links: {
+      url: string | null;
+      label: string;
+      active: boolean;
+    }[];
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
+  };
+}
+
+interface SubscriptionUserDetails {
+  status: boolean;
+  limit: number;
+  start_date: string;
+  end_date: string;
+  type: string;
+}
+
+interface SubscriptionsNew {
+  front_end: SubscriptionUserDetails;
+  viralgenius_unlimited: SubscriptionUserDetails;
+  viralgenius_affiliate_offer: SubscriptionUserDetails;
+  viralgenius_sales_converter: SubscriptionUserDetails;
+  viralgenius_media_studio: SubscriptionUserDetails;
+  reseller: SubscriptionUserDetails;
+  viralgenius_agency: SubscriptionUserDetails;
+}
+
+export interface CreateUserPayload {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  role: string;
+  is_active: boolean;
+  subscriptions: SubscriptionsNew;
+}
+
+export interface CreateUserResponse {
+  status: string;
+  message: string;
+  user?: User;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface udpateUserPayload {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  role: string;
+  is_active: boolean;
+}
+
+export interface UpdateUserResponse {
+  status: string;
+  message: string;
+  user?: User;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface UpdateUserSubscriptionsPayload {
+  user_id: number;
+  subscriptions: {
+    front_end: {
+      id: number;
+      status: boolean;
+      limit?: number;
+    };
+    viralgenius_unlimited: {
+      id: number;
+      status: boolean;
+      limit?: number;
+    };
+    viralgenius_media_studio: {
+      id: number;
+      status: boolean;
+      limit?: number;
+    };
+    reseller: {
+      id: number;
+      status: boolean;
+      limit?: number;
+    };
+    viralgenius_agency: {
+      id: number;
+      status: boolean;
+      limit?: number;
+    };
+  };
+}
+
+export interface updateUserPasswordPayload {
+  user_id: number;
+  password: string;
+  password_confirmation: string;
 }

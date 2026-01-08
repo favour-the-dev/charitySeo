@@ -23,7 +23,15 @@ import { EditWorkspaceModal } from "@/components/workspaces/edit-workspace-modal
 import { EditTeamMemberModal } from "@/components/workspaces/edit-team-member-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Users, Edit, Trash2, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Users,
+  Edit,
+  Trash2,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Workspace } from "@/services/Workspace";
 import { TeamMemberType } from "@/types/types";
 import {
@@ -71,6 +79,7 @@ export default function SettingsPageComponent() {
     deleteWorkspace,
     deleteTeamMember,
     isLoading,
+    isFetching,
   } = useWorkspaceStore();
 
   const { user, updateUser } = useUserStore();
@@ -102,6 +111,14 @@ export default function SettingsPageComponent() {
       setSelectedWorkspaceId(String(workspaces[0].id));
     }
   }, [workspaces, selectedWorkspaceId]);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedWorkspaceId]);
 
   // Password Change State
   const [newPassword, setNewPassword] = useState("");
@@ -234,6 +251,11 @@ export default function SettingsPageComponent() {
     ? getWorkspaceMembers(selectedWorkspace.id)
     : [];
 
+  const totalPages = Math.ceil(currentWorkspaceMembers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentMembers = currentWorkspaceMembers.slice(startIndex, endIndex);
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -314,7 +336,7 @@ export default function SettingsPageComponent() {
               </Button> */}
             </div>
 
-            {isLoading ? (
+            {isFetching ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin" />
               </div>
@@ -483,7 +505,7 @@ export default function SettingsPageComponent() {
                 </div>
 
                 <div className="rounded-md border">
-                  {isLoading ? (
+                  {isFetching ? (
                     <div className="flex justify-center items-center h-64">
                       <Loader2 className="h-8 w-8 animate-spin" />
                     </div>
@@ -498,7 +520,7 @@ export default function SettingsPageComponent() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {currentWorkspaceMembers.map((member) => (
+                        {currentMembers.map((member) => (
                           <TableRow key={member.id}>
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
@@ -534,7 +556,7 @@ export default function SettingsPageComponent() {
                             </TableCell>
                           </TableRow>
                         ))}
-                        {currentWorkspaceMembers.length === 0 && (
+                        {currentMembers.length === 0 && (
                           <TableRow>
                             <TableCell
                               colSpan={4}
@@ -548,6 +570,37 @@ export default function SettingsPageComponent() {
                     </Table>
                   )}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-end space-x-2 py-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                      Page {currentPage} of {totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

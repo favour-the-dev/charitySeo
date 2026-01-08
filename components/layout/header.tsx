@@ -46,6 +46,7 @@ export function Header() {
     ? {
         name: `${storedUser.first_name} ${storedUser.last_name}`,
         email: storedUser.email,
+        role: storedUser.role,
         avatar: "",
         isAdmin: storedUser.role === "Administrator",
       }
@@ -181,31 +182,6 @@ export function Header() {
 
       <div className="ml-2 flex items-center gap-2 sm:gap-4 shrink-0">
         <GoogleTranslate />
-        <LanguageSelector />
-        {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Globe className="h-5 w-5" />
-              <span className="sr-only">Switch Language</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Language</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {languages.map((lang) => (
-              <DropdownMenuItem
-                key={lang}
-                onSelect={() => setLanguage(lang)}
-                className="gap-2"
-              >
-                <div className="flex h-4 w-4 items-center justify-center">
-                  {language === lang && <Check className="h-4 w-4" />}
-                </div>
-                {lang}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu> */}
         <Button variant="ghost" size="icon">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>
@@ -239,7 +215,7 @@ export function Header() {
                 <span>Profile</span>
               </Link>
             </DropdownMenuItem>
-            {user.isAdmin && (
+            {user.role === "admin" && (
               <DropdownMenuItem asChild>
                 <Link
                   href="/admin"

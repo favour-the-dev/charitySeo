@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,7 +10,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +65,15 @@ export function AgentsTable({ searchQuery = "" }: { searchQuery?: string }) {
       agent.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(filteredAgents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAgents = filteredAgents.slice(startIndex, endIndex);
+
   return (
     <div className="rounded-md border mt-10">
       <Table>
@@ -74,7 +90,7 @@ export function AgentsTable({ searchQuery = "" }: { searchQuery?: string }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredAgents.map((agent) => (
+          {currentAgents.map((agent) => (
             <TableRow key={agent.id}>
               <TableCell className="font-medium">{agent.name}</TableCell>
               <TableCell>{agent.group}</TableCell>
@@ -124,6 +140,35 @@ export function AgentsTable({ searchQuery = "" }: { searchQuery?: string }) {
           ))}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end space-x-2 py-4 px-4 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <div className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

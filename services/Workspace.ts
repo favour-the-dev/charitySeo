@@ -2,28 +2,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next/client";
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/workspace`;
 const activeBaseUrl = `${process.env.NEXT_PUBLIC_API_URL}/workspaces`;
-export interface Workspace {
-  id: number;
-  name: string;
-  slug: string;
-  is_default: number;
-  logo: string | null;
-}
-
-export interface CreateWorkspaceRequest {
-  name: string;
-  slug: string;
-  is_default: number;
-  logo?: File | string;
-}
-
-export interface UpdateWorkspaceRequest {
-  id: number;
-  name: string;
-  slug: string;
-  is_default: number;
-}
-
+import { CreateWorkspacePayload, UpdateWorkspacePayload } from "@/types/types";
 export default class WorkspaceService {
   private static getAuthToken() {
     const token = getCookie("authToken");
@@ -51,7 +30,7 @@ export default class WorkspaceService {
     }
   }
 
-  static async create(payload: CreateWorkspaceRequest) {
+  static async create(payload: CreateWorkspacePayload) {
     const { token } = this.getAuthToken();
     try {
       const response = await axios.post(`${baseUrl}/store`, payload, {
@@ -67,7 +46,7 @@ export default class WorkspaceService {
     }
   }
 
-  static async update(data: UpdateWorkspaceRequest) {
+  static async update(data: UpdateWorkspacePayload) {
     const { token } = this.getAuthToken();
     try {
       const response = await axios.post(`${baseUrl}/update`, data, {

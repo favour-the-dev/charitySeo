@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { useReviewsStore } from "@/lib/store";
 import { Review, ReviewStatus } from "@/lib/mock-data";
 import { ReviewDialog } from "./review-dialog";
-import { Star, Search, Filter } from "lucide-react";
+import { Star, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function ReviewsTable() {
   const {
@@ -37,6 +37,15 @@ export function ReviewsTable() {
   const reviews = getFilteredReviews();
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(reviews.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentReviews = reviews.slice(startIndex, endIndex);
 
   const handleRowClick = (review: Review) => {
     setSelectedReview(review);
@@ -113,7 +122,7 @@ export function ReviewsTable() {
             <TableRow>
               <TableHead>Customer</TableHead>
               <TableHead>Rating</TableHead>
-              <TableHead className="w-[400px]">Review</TableHead>
+              <TableHead>Review</TableHead>
               <TableHead className="hidden md:table-cell">Platform</TableHead>
               <TableHead className="hidden md:table-cell">Date</TableHead>
               <TableHead>Status</TableHead>
@@ -121,14 +130,14 @@ export function ReviewsTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {reviews.length === 0 ? (
+            {currentReviews.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
                   No reviews found.
                 </TableCell>
               </TableRow>
             ) : (
-              reviews.map((review) => (
+              currentReviews.map((review) => (
                 <TableRow
                   key={review.id}
                   className="cursor-pointer hover:bg-muted/50"
@@ -173,6 +182,35 @@ export function ReviewsTable() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <div className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       <ReviewDialog
         review={selectedReview}

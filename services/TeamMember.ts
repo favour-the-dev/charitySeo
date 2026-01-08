@@ -100,7 +100,6 @@ export default class TeamMemberService {
           errors: error.response?.data?.errors ?? null,
         };
       }
-
       throw {
         status: "error",
         message: "Unexpected error occurred",

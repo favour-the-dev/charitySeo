@@ -121,3 +121,81 @@
     @apply bg-background text-foreground;
   }
 }
+
+iframe {
+  position: absolute !important;
+  display: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+.goog-te-gadget {
+  font-family: inherit !important;
+  display: inline-block !important;
+  position: relative;
+  color: transparent !important; /* Hides "Powered by Google" */
+  font-size: 0 !important;
+}
+
+.goog-te-gadget .goog-te-combo {
+  /* Resetting generic styles */
+  margin: 0 !important;
+  width: auto !important;
+
+  /* Shadcn/Tailwind matching styles */
+  height: 2rem !important; /* h-9 */
+  padding: 0.25rem 2rem 0.25rem 0.75rem !important; /* py-1 px-3 */
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--border) !important;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  font-size: 0.875rem !important; /* text-sm */
+  line-height: 1.25rem !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; /* shadow-sm */
+  outline: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+
+  /* Custom Arrow for consistent look */
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.5rem center !important;
+  background-size: 1rem !important;
+}
+
+/* Dark mode arrow adjustment */
+.dark .goog-te-gadget .goog-te-combo {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+/* Responsive Widths */
+@media (min-width: 640px) {
+  .goog-te-gadget .goog-te-combo {
+    min-width: 120px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .goog-te-gadget .goog-te-combo {
+    width: 100% !important;
+    max-width: 80px !important;
+    height: 1.75rem !important; /* Slightly smaller height on mobile */
+    padding-right: 1.5rem !important;
+    font-size: 0.75rem !important; /* Smaller font on mobile */
+  }
+}
+
+/* Hide specific Google Translate elements */
+.goog-te-gadget span {
+  display: none !important;
+}
+
+.goog-logo-link {
+  display: none !important;
+  pointer-events: none;
+}

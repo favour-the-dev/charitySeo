@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import {
   Dialog,
@@ -13,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useWorkspaceStore } from "@/lib/workspace-store";
+import { AxiosError } from "axios";
 import { toast } from "react-hot-toast";
-
+import { Loader2 } from "lucide-react";
 interface CreateWorkspaceModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,12 +24,11 @@ export function CreateWorkspaceModal({
   open,
   onOpenChange,
 }: CreateWorkspaceModalProps) {
-  const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
+  const { isLoading, createWorkspace, fetchWorkspaces } = useWorkspaceStore();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [logo, setLogo] = useState<File | null>(null);
   const [isDefaultState, setIsDefaultState] = useState(false);
-  const [isDefault, setIsDefault] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,23 +38,26 @@ export function CreateWorkspaceModal({
     }
 
     try {
-      await createWorkspace({
+      const res = await createWorkspace({
         name,
         slug,
         is_default: isDefaultState ? 1 : 0,
         logo: logo || undefined,
       });
-
-      toast.success("Workspace created successfully");
-      onOpenChange(false);
-      // Reset form
-      setName("");
-      setSlug("");
-      setLogo(null);
-      setIsDefaultState(false);
-      setIsDefault(0);
-    } catch (error) {
-      toast.error("Failed to create workspace");
+      if (res.status === "success" && res.workspace) {
+        onOpenChange(false);
+        setName("");
+        setSlug("");
+        setLogo(null);
+        setIsDefaultState(false);
+        await fetchWorkspaces();
+      }
+      toast.success(`${res.message}`);
+    } catch (error: AxiosError | any) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Failed to create workspace. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
@@ -105,7 +107,10 @@ export function CreateWorkspaceModal({
             <Label htmlFor="default">Set as default workspace</Label>
           </div>
           <DialogFooter>
-            <Button type="submit">Create Workspace</Button>
+            <Button type="submit">
+              {isLoading ? "Creating Workspace..." : "Create Workspace"}
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

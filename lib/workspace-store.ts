@@ -1,9 +1,11 @@
 import { create } from "zustand";
-import WorkspaceService, {
+import WorkspaceService from "@/services/Workspace";
+import {
   Workspace,
-  CreateWorkspaceRequest,
-  UpdateWorkspaceRequest,
-} from "@/services/Workspace";
+  CreateWorkspacePayload,
+  createWorkspaceResponse,
+  UpdateWorkspacePayload,
+} from "@/types/types";
 import TeamMemberService, {
   CreateTeamMemberRequest,
   UpdateTeamMemberRequest,
@@ -22,18 +24,21 @@ interface WorkspaceState {
   teamMembers: TeamMemberType[];
   activeWorkspaceId: number | null;
   isLoading: boolean;
+  isFetching: boolean;
   isInitializing: boolean;
   error: string | null;
 
-  fetchWorkspaces: () => Promise<void>;
-  createWorkspace: (data: CreateWorkspaceRequest) => Promise<void>;
-  updateWorkspace: (data: UpdateWorkspaceRequest) => Promise<void>;
+  fetchWorkspaces: (silent?: boolean) => Promise<void>;
+  createWorkspace: (
+    data: CreateWorkspacePayload
+  ) => Promise<createWorkspaceResponse>;
+  updateWorkspace: (data: UpdateWorkspacePayload) => Promise<void>;
   deleteWorkspace: (id: number) => Promise<void>;
   setActiveWorkspace: (id: number) => Promise<void>;
   setWorkspaces: (workspaces: Workspace[]) => void;
   setActiveWorkspaceId: (id: number) => void;
   setIsInitializing: (isInitializing: boolean) => void;
-  fetchTeamMembers: () => Promise<void>;
+  fetchTeamMembers: (silent?: boolean) => Promise<void>;
   createTeamMember: (
     data: CreateTeamMemberRequest
   ) => Promise<teamMemberResponse>;
@@ -46,16 +51,17 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   teamMembers: [],
   activeWorkspaceId: null,
   isLoading: false,
+  isFetching: false,
   isInitializing: true,
   error: null,
 
   setIsInitializing: (isInitializing) => set({ isInitializing }),
 
-  fetchWorkspaces: async () => {
-    set({ isLoading: true, error: null });
+  fetchWorkspaces: async (silent = false) => {
+    set({ isLoading: true, isFetching: !silent, error: null });
     try {
       const response = await WorkspaceService.getAll();
-      console.log("workspaces", response);
+      // console.log("workspaces", response);
 
       // Map the userWorkspaces response to extract the actual workspace objects
       const workspaces = response.userWorkspaces
@@ -77,7 +83,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       console.error("Error fetching workspaces:", error);
       set({ error: (error as Error).message });
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, isFetching: false });
     }
   },
 
@@ -85,8 +91,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const newWorkspace = await WorkspaceService.create(data);
-      set((state) => ({ workspaces: [...state.workspaces, newWorkspace] }));
-      await get().fetchWorkspaces();
+      set((state) => ({
+        workspaces: [...state.workspaces, newWorkspace.workspace as Workspace],
+      }));
+      return newWorkspace;
     } catch (error) {
       console.error("Error creating workspace:", error);
       set({ error: (error as Error).message });
@@ -105,7 +113,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           w.id === data.id ? updatedWorkspace : w
         ),
       }));
-      await get().fetchWorkspaces();
+      await get().fetchWorkspaces(true);
     } catch (error) {
       console.error("Error updating workspace:", error);
       set({ error: (error as Error).message });
@@ -122,7 +130,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set((state) => ({
         workspaces: state.workspaces.filter((w) => w.id !== id),
       }));
-      await get().fetchWorkspaces();
+      await get().fetchWorkspaces(true);
     } catch (error) {
       console.error("Error deleting workspace:", error);
       set({ error: (error as Error).message });
@@ -148,22 +156,14 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   setWorkspaces: (workspaces) => set({ workspaces }),
   setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
 
-  fetchTeamMembers: async () => {
-    set({ isLoading: true, error: null });
+  fetchTeamMembers: async (silent = false) => {
+    set({ isLoading: true, isFetching: !silent, error: null });
     try {
       const response = await TeamMemberService.getAll();
       console.log("team member response", response);
 
       const rawMembers: TeamMemberType[] =
         response.users && Array.isArray(response.users) ? response.users : [];
-
-      // if (Array.isArray(response)) {
-      //   rawMembers = response;
-      // } else if (response.users && Array.isArray(response.users)) {
-      //   rawMembers = response.users;
-      // } else if (response.data && Array.isArray(response.data)) {
-      //   rawMembers = response.data;
-      // }
 
       const teamMembers: TeamMemberType[] = rawMembers as TeamMemberType[];
 
@@ -172,7 +172,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       console.error("Error fetching team members:", error);
       set({ error: (error as Error).message });
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, isFetching: false });
     }
   },
 
@@ -181,22 +181,16 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
     try {
       const newMember = await TeamMemberService.create(data);
-
       set((state) => ({
         teamMembers: [...state.teamMembers, newMember.user as TeamMemberType],
       }));
-
-      // await get().fetchTeamMembers();
-
       return {
         status: "success",
         message: "Team member created successfully",
       };
     } catch (error: any) {
       console.error("Error creating team member:", error);
-
       set({ error: error.message });
-
       return {
         status: "error",
         message: error.message,
@@ -207,27 +201,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
   },
 
-  // createTeamMember: async (data) => {
-  //   set({ isLoading: true, error: null });
-  //   try {
-  //     const newMember = await TeamMemberService.create(data);
-  //     if (newMember) {
-  //       set((state) => ({
-  //         teamMembers: [...state.teamMembers, newMember.user as TeamMemberType],
-  //       }));
-  //       await get().fetchTeamMembers();
-  //       return { status: "success", message: newMember.errors };
-  //     }
-  //     return { status: "error", message: "Failed to create team member" };
-  //   } catch (error) {
-  //     console.error("Error creating team member:", error);
-  //     set({ error: (error as Error).message });
-  //     return { status: "error", message: (error as Error).message };
-  //   } finally {
-  //     set({ isLoading: false });
-  //   }
-  // },
-
   updateTeamMember: async (data) => {
     set({ isLoading: true, error: null });
     try {
@@ -237,7 +210,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           m.id === data.id ? (updatedMember.user as TeamMemberType) : m
         ),
       }));
-      await get().fetchTeamMembers();
+      await get().fetchTeamMembers(true);
     } catch (error) {
       console.error("Error updating team member:", error);
       set({ error: (error as Error).message });
@@ -254,7 +227,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set((state) => ({
         teamMembers: state.teamMembers.filter((m) => m.id !== id),
       }));
-      await get().fetchTeamMembers();
+      await get().fetchTeamMembers(true);
     } catch (error) {
       console.error("Error deleting team member:", error);
       set({ error: (error as Error).message });

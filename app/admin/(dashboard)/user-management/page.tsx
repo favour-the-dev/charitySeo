@@ -1,15 +1,46 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserStats } from "@/components/admin/user-management/user-stats";
 import { UsersTable } from "@/components/admin/user-management/users-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Loader2 } from "lucide-react";
 import { AddUserModal } from "@/components/admin/user-management/add-user-modal";
+import AdminService from "@/services/Admin";
+import { getAdminDashboardResponse } from "@/types/types";
+import { toast } from "react-hot-toast";
 
 export default function UserManagementPage() {
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dashboardData, setDashboardData] =
+    useState<getAdminDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const data = await AdminService.getAdminDashboardData();
+      setDashboardData(data);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -21,7 +52,17 @@ export default function UserManagementPage() {
         </Button>
       </div>
 
-      <UserStats />
+      {dashboardData && (
+        <UserStats
+          stats={
+            dashboardData.stats || {
+              total_users: 0,
+              users_today: 0,
+              users_this_week: 0,
+            }
+          }
+        />
+      )}
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1 md:max-w-sm">
@@ -36,11 +77,16 @@ export default function UserManagementPage() {
         </div>
       </div>
 
-      <UsersTable searchQuery={searchQuery} />
+      <UsersTable
+        searchQuery={searchQuery}
+        users={dashboardData?.users?.data || []}
+        onDataChange={fetchDashboardData}
+      />
 
       <AddUserModal
         isOpen={isAddUserModalOpen}
         onClose={() => setIsAddUserModalOpen(false)}
+        onUserAdded={fetchDashboardData}
       />
     </div>
   );

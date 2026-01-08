@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useWorkspaceStore } from "@/lib/workspace-store";
-import { Workspace } from "@/services/Workspace";
+import { Workspace } from "@/types/types";
 import { toast } from "react-hot-toast";
 
 interface EditWorkspaceModalProps {
@@ -31,13 +31,12 @@ export function EditWorkspaceModal({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [isDefaultState, setIsDefaultState] = useState(false);
-  const [isDefault, setIsDefault] = useState(0);
 
   useEffect(() => {
     if (workspace) {
       setName(workspace.name);
       setSlug(workspace.slug);
-      setIsDefault(workspace.is_default);
+      setIsDefaultState(workspace.is_default);
     }
   }, [workspace]);
 

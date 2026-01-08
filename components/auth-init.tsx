@@ -5,6 +5,7 @@ import { useUserStore } from "@/lib/user-store";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import AuthService from "@/services/Auth";
 import { getCookie } from "cookies-next/client";
+import { UserWorkspace } from "@/types/types";
 
 export function AuthInit() {
   const { setUser } = useUserStore();
@@ -33,9 +34,14 @@ export function AuthInit() {
             Array.isArray(user.all_user_workspaces)
           ) {
             const workspaces = user.all_user_workspaces.map(
-              (uw: any) => uw.workspace
+              (uw: UserWorkspace) => uw.workspace
             );
             setWorkspaces(workspaces);
+            // setActiveWorkspaceId(
+            //   user.all_user_workspaces.find((uw: UserWorkspace) =>
+            //     uw.is_active ? uw.workspace.id : null
+            //   )
+            // );
           }
 
           if (user.active_workspace) {
