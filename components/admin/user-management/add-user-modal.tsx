@@ -108,8 +108,10 @@ export function AddUserModal({
         toast.success("User created successfully");
         if (onUserAdded) onUserAdded();
         onClose();
-      } else {
-        toast.error(response.message || "Failed to create user");
+      } else if (response.status === "error" && response.errors) {
+        Object.entries(response.errors).forEach(([field, messages]) => {
+          toast.error(`${field}: ${messages.join(", ")}`);
+        });
       }
     } catch (error: any) {
       console.error("Error creating user:", error);
