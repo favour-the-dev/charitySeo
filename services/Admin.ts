@@ -11,7 +11,7 @@ import {
 } from "@/types/types";
 
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/admin`;
-
+const activateUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
 export default class AdminService {
   private static getAuthToken() {
     const token = getCookie("authToken");
@@ -109,7 +109,7 @@ export default class AdminService {
     try {
       const { token } = this.getAuthToken();
       const res = await axios.post(
-        `${baseUrl}/activateUser`,
+        `${activateUrl}/activateUser`,
         { id },
         {
           headers: {
@@ -133,7 +133,7 @@ export default class AdminService {
     try {
       const { token } = this.getAuthToken();
       const res = await axios.post(
-        `${baseUrl}/deactivateUser`,
+        `${activateUrl}/deactivateUser`,
         { id },
         {
           headers: {
