@@ -66,7 +66,7 @@ export default class AdminService {
       // if the backend uses the same endpoint. But here we have specific endpoints.
       // Based on type, it's there, but let's see.
 
-      const response = await axios.put(
+      const response = await axios.post(
         `${baseUrl}/users/update/details`,
         payload,
         {
@@ -87,14 +87,19 @@ export default class AdminService {
   static async deleteUser(
     user_id: number
   ): Promise<{ status: string; message: string }> {
+    const { token } = this.getAuthToken();
+    console.log("token: ", token);
     try {
-      const { token } = this.getAuthToken();
-      const response = await axios.post(`${baseUrl}/users/delete`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        data: { user_id },
-      });
+      const response = await axios.post(
+        `${baseUrl}/users/delete`,
+        { user_id: user_id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data: { status: string; message: string } = response.data;
       return data;
     } catch (error) {

@@ -115,9 +115,17 @@ export function AddUserModal({
       }
     } catch (error: any) {
       console.error("Error creating user:", error);
-      const errorMessage =
-        error?.response?.data?.message || "Failed to create user";
-      toast.error(errorMessage);
+      if (error?.response?.data?.errors as { [key: string]: string[] }) {
+        Object.entries(
+          error.response.data.errors as { [key: string]: string[] }
+        ).forEach(([field, messages]) => {
+          toast.error(`${field}: ${messages.join(", ")}`);
+        });
+      } else {
+        const errorMessage =
+          error?.response?.data?.message || "An unexpected error occurred";
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
