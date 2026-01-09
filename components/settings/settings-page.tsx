@@ -32,7 +32,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Workspace } from "@/services/Workspace";
+import { Workspace } from "@/types/types";
 import { TeamMemberType } from "@/types/types";
 import {
   Select,
