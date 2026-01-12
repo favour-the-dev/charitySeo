@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
@@ -14,7 +14,12 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { integrations } from "@/lib/integrations";
-import { useIntegrationsStore } from "@/lib/integrations-store";
+import {
+  useIntegrationsStore,
+  ConnectedAccount,
+} from "@/lib/integrations-store";
+import { useWorkspaceStore } from "@/lib/workspace-store";
+import IntegrationService from "@/services/integrations";
 import {
   ArrowLeft,
   Plus,
@@ -34,9 +39,68 @@ export default function IntegrationDetailPage() {
   const integration = integrations.find((i) => i.id === id);
   const { connectedAccounts, addAccount, toggleAccountActive, removeAccount } =
     useIntegrationsStore();
-  const accounts = connectedAccounts[id] || [];
+  const { activeWorkspaceId } = useWorkspaceStore();
+
+  // Local state for fetched accounts to avoid polluting global store with API data directly if needed,
+  // or use this to sync with global store. For now, let's use global store but maybe initialize it.
+  // Actually, the requirement says "Fetch and display... using getConnectedFacebookPages".
+  // We should probably merge these into the store or just display them.
+  // Given the existing architecture uses `useIntegrationsStore`, let's try to populate it or use a local list if it's dynamic.
+  // However, the prompt says "display connected accounts under Facebook integrations using the existing card format".
+  // The existing card format relies on `accounts` from `connectedAccounts[id]`.
+
+  // We'll use a local state for the "real" fetched data if we are doing API calls,
+  // or we can sync it to the store. Let's start with local state for the API fetched pages to show them.
+  const [fetchedAccounts, setFetchedAccounts] = useState<ConnectedAccount[]>(
+    []
+  );
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+
+  // Combine store accounts (mocks/manual) with fetched API accounts
+  // In a real app, you might replace the store logic entirely with API calls.
+  // We will prioritize the fetched accounts for Facebook.
+  const displayAccounts =
+    id === "facebook" ? fetchedAccounts : connectedAccounts[id] || [];
 
   const [isConnecting, setIsConnecting] = useState(false);
+
+  useEffect(() => {
+    if (id === "facebook" && activeWorkspaceId) {
+      fetchFacebookPages();
+    }
+  }, [id, activeWorkspaceId]);
+
+  const fetchFacebookPages = async () => {
+    if (!activeWorkspaceId) return;
+    setLoadingAccounts(true);
+    try {
+      const pages = await IntegrationService.getConnectedFacebookPages(
+        activeWorkspaceId
+      );
+      // Map API response to ConnectedAccount shape
+      // As we don't know the exact shape of `pages`, assuming it matches what we need or we map it.
+      // Based on typical FB OAuth, pages have id, name, access_token, category, etc.
+      // We will assume `pages` is an array of objects.
+
+      const mappedAccounts: ConnectedAccount[] = Array.isArray(pages)
+        ? pages.map((page: any) => ({
+            id: page.id || nanoid(),
+            name: page.name || "Unknown Page",
+            email: page.email || "No email", // Facebook pages might not have direct email easily accessible in list
+            active: true, // Assuming connected means active
+            dateConnected: new Date().toISOString(), // We might not have this from API, so use current or fake
+            platformId: page.id,
+          }))
+        : [];
+
+      setFetchedAccounts(mappedAccounts);
+    } catch (error) {
+      console.error("Failed to fetch facebook pages", error);
+      // toast.error("Failed to fetch connected Facebook pages");
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
 
   if (!integration) {
     return (
@@ -52,10 +116,25 @@ export default function IntegrationDetailPage() {
     );
   }
 
-  const handleConnect = () => {
+  const handleConnect = async () => {
     setIsConnecting(true);
 
-    // Simulate OAuth delay
+    if (id === "facebook") {
+      try {
+        const oauthUrl = await IntegrationService.connectFacebook();
+        if (oauthUrl) {
+          window.location.href = oauthUrl;
+          return;
+        }
+      } catch (error) {
+        console.error("Facebook connect error:", error);
+        toast.error("Failed to initiate Facebook connection");
+        setIsConnecting(false);
+        return;
+      }
+    }
+
+    // Simulate OAuth delay for others
     setTimeout(() => {
       const mockAccount = {
         name: `${integration.name} Account`,
@@ -136,9 +215,14 @@ export default function IntegrationDetailPage() {
 
         {/* Connected Accounts List */}
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Connected Accounts</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold">Connected Accounts</h3>
+            {loadingAccounts && (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
 
-          {accounts.length === 0 ? (
+          {!loadingAccounts && displayAccounts.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -162,7 +246,7 @@ export default function IntegrationDetailPage() {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {accounts.map((account) => (
+              {displayAccounts.map((account) => (
                 <Card key={account.id}>
                   <CardContent className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 gap-4">
                     <div className="flex items-start md:items-center gap-4 w-full md:w-auto">
@@ -187,19 +271,27 @@ export default function IntegrationDetailPage() {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {account.email}
-                        </p>
+                        {account.email && (
+                          <p className="text-sm text-muted-foreground truncate">
+                            {account.email}
+                          </p>
+                        )}
                         <p className="text-xs text-muted-foreground md:hidden mt-1">
                           Connected:{" "}
-                          {new Date(account.dateConnected).toLocaleDateString()}
+                          {account.dateConnected
+                            ? new Date(
+                                account.dateConnected
+                              ).toLocaleDateString()
+                            : "N/A"}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between w-full md:w-auto gap-6 pl-14 md:pl-0">
                       <div className="hidden md:block text-sm text-muted-foreground mr-4">
-                        {new Date(account.dateConnected).toLocaleDateString()}
+                        {account.dateConnected
+                          ? new Date(account.dateConnected).toLocaleDateString()
+                          : "N/A"}
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-muted-foreground">

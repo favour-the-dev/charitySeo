@@ -77,7 +77,7 @@ export default function GoogleTranslate() {
       () => {
         w.googleTranslateElementInit?.();
       },
-      { once: true }
+      { once: false }
     );
   }, []);
 
@@ -86,6 +86,7 @@ export default function GoogleTranslate() {
       id="google_translate_element"
       className="h-6"
       suppressHydrationWarning
+      style={{ maxWidth: "200px" }}
     />
   );
 }
