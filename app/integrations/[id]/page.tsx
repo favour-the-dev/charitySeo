@@ -41,30 +41,22 @@ export default function IntegrationDetailPage() {
     useIntegrationsStore();
   const { activeWorkspaceId } = useWorkspaceStore();
 
-  // Local state for fetched accounts to avoid polluting global store with API data directly if needed,
-  // or use this to sync with global store. For now, let's use global store but maybe initialize it.
-  // Actually, the requirement says "Fetch and display... using getConnectedFacebookPages".
-  // We should probably merge these into the store or just display them.
-  // Given the existing architecture uses `useIntegrationsStore`, let's try to populate it or use a local list if it's dynamic.
-  // However, the prompt says "display connected accounts under Facebook integrations using the existing card format".
-  // The existing card format relies on `accounts` from `connectedAccounts[id]`.
-
-  // We'll use a local state for the "real" fetched data if we are doing API calls,
-  // or we can sync it to the store. Let's start with local state for the API fetched pages to show them.
   const [fetchedAccounts, setFetchedAccounts] = useState<ConnectedAccount[]>(
     []
   );
   const [loadingAccounts, setLoadingAccounts] = useState(false);
 
   // Combine store accounts (mocks/manual) with fetched API accounts
-  // In a real app, you might replace the store logic entirely with API calls.
-  // We will prioritize the fetched accounts for Facebook.
+  // We prioritize fetched accounts for Facebook if available.
   const displayAccounts =
     id === "facebook" ? fetchedAccounts : connectedAccounts[id] || [];
 
   const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
+    // Only fetch if it's Facebook.
+    // NOTE: We assume this endpoint returns "Saved" pages when called here,
+    // vs "Candidate" pages when called in the selection flow.
     if (id === "facebook" && activeWorkspaceId) {
       fetchFacebookPages();
     }
@@ -74,24 +66,37 @@ export default function IntegrationDetailPage() {
     if (!activeWorkspaceId) return;
     setLoadingAccounts(true);
     try {
-      const pages = await IntegrationService.getConnectedFacebookPages(
+      const response = await IntegrationService.getConnectedFacebookPages(
         activeWorkspaceId
       );
-      // Map API response to ConnectedAccount shape
-      // As we don't know the exact shape of `pages`, assuming it matches what we need or we map it.
-      // Based on typical FB OAuth, pages have id, name, access_token, category, etc.
-      // We will assume `pages` is an array of objects.
 
-      const mappedAccounts: ConnectedAccount[] = Array.isArray(pages)
-        ? pages.map((page: any) => ({
-            id: page.id || nanoid(),
-            name: page.name || "Unknown Page",
-            email: page.email || "No email", // Facebook pages might not have direct email easily accessible in list
-            active: true, // Assuming connected means active
-            dateConnected: new Date().toISOString(), // We might not have this from API, so use current or fake
-            platformId: page.id,
-          }))
-        : [];
+      console.log("Facebook pages response:", response);
+
+      let pagesList: any[] = [];
+      if (Array.isArray(response)) {
+        pagesList = response;
+      } else if (
+        response &&
+        "pages" in response &&
+        Array.isArray(response.pages)
+      ) {
+        pagesList = response.pages;
+      } else if (
+        response &&
+        "data" in response &&
+        Array.isArray((response as any).data)
+      ) {
+        pagesList = (response as any).data;
+      }
+
+      const mappedAccounts: ConnectedAccount[] = pagesList.map((page) => ({
+        id: page.id || nanoid(),
+        name: page.name || "Unknown Page",
+        email: page.category || "No Category", // displaying category as subtitle
+        active: true,
+        dateConnected: new Date().toISOString(), // We might not have this from API, so use current or fake
+        platformId: page.id,
+      }));
 
       setFetchedAccounts(mappedAccounts);
     } catch (error) {

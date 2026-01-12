@@ -1,6 +1,9 @@
 import axios from "axios";
 import { getCookie } from "cookies-next/client";
-
+import {
+  getConnectedFacebookPagesResponse,
+  saveFacbookCredentialsPayload,
+} from "@/types/types";
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 export default class IntegrationService {
@@ -31,11 +34,33 @@ export default class IntegrationService {
     }
   }
 
-  static async getConnectedFacebookPages(workspace_id: number) {
+  static async getConnectedFacebookPages(
+    workspace_id: number
+  ): Promise<getConnectedFacebookPagesResponse> {
     try {
       const { token } = this.getAuthToken();
       const res = await axios.get(
         `${baseUrl}/facebook/pages?workspace_id=${workspace_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data: getConnectedFacebookPagesResponse = res.data;
+      return data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  static async saveFacebookPages(payload: saveFacbookCredentialsPayload) {
+    try {
+      const { token } = this.getAuthToken();
+      const res = await axios.post(
+        `${baseUrl}/save/user/facebook/credentials?Acc`,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,

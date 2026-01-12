@@ -400,3 +400,44 @@ export interface updateUserPasswordPayload {
   password: string;
   password_confirmation: string;
 }
+
+export interface facebookPage {
+  id: string;
+  name: string;
+  about: string;
+  description: string;
+  category: string;
+  categrory_list: { id: string; name: string }[];
+  phone: string;
+  website: string;
+  is_permanently_closed: boolean;
+  verification_status: string;
+  fan_count: number;
+  followers_count: number;
+  overall_star_rating: number;
+  cover: {
+    cover_id: string;
+    offset_x: string;
+    offset_y: string;
+    source: string;
+    id: string;
+  };
+  picture: {
+    data: {
+      height: number;
+      is_silhouette: boolean;
+      url: string;
+      width: number;
+    };
+  };
+  access_token: string;
+  user_token: string;
+}
+export interface getConnectedFacebookPagesResponse {
+  message?: string;
+  pages?: facebookPage[];
+}
+
+export interface saveFacbookCredentialsPayload {
+  pages: facebookPage[];
+}
