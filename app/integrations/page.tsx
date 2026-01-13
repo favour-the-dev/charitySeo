@@ -15,11 +15,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useIntegrationsStore } from "@/lib/integrations-store";
 
 export default function IntegrationsPage() {
-  const { connectedAccounts } = useIntegrationsStore();
-
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -41,9 +38,6 @@ export default function IntegrationsPage() {
           <TabsContent value="authorized" className="mt-6">
             <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {authorizedIntegrations.map((integration) => {
-                const isConnected =
-                  (connectedAccounts[integration.id]?.length || 0) > 0;
-
                 return (
                   <Link
                     href={`/integrations/${integration.id}`}
@@ -59,11 +53,6 @@ export default function IntegrationsPage() {
                             className="object-contain"
                           />
                         </div>
-                        {isConnected && (
-                          <Badge className="absolute top-3 right-3 bg-green-500 hover:bg-green-600">
-                            Connected
-                          </Badge>
-                        )}
                       </div>
                       <CardHeader>
                         <CardTitle className="text-lg">

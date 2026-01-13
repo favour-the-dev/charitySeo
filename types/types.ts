@@ -1,3 +1,12 @@
+export interface ConnectedAccount {
+  id: string;
+  name: string;
+  email?: string;
+  active: boolean;
+  dateConnected: string;
+  platformId: string;
+}
+
 export type User = {
   id: number;
   name: string;
@@ -401,6 +410,7 @@ export interface updateUserPasswordPayload {
   password_confirmation: string;
 }
 
+// integrations types
 export interface facebookPage {
   id: string;
   name: string;
@@ -440,4 +450,125 @@ export interface getConnectedFacebookPagesResponse {
 
 export interface saveFacbookCredentialsPayload {
   pages: facebookPage[];
+}
+
+export interface saveFacebookPagesResponse {
+  status: string;
+  message: string;
+}
+
+export interface facebookDataType {
+  id: number;
+  user_id: number;
+  workspace_id: number;
+  platform_id: string;
+  token_type: string;
+  expires_at: string | null;
+  scopes: string[];
+  metadata: {
+    name: string;
+    page_id: string;
+    picture: string;
+    fan_count: number;
+    rating_count: number;
+    followers_count: number;
+    page_access_token: string;
+    overall_star_rating: number;
+  };
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface getUserIntegrationsResponse {
+  facebook_data?: facebookDataType[];
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+// user location types
+export interface locationDataType {
+  name: string;
+  address: string;
+  address2?: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  phone?: string;
+  website?: string;
+  latitude?: number;
+  longitude?: number;
+  primary_category?: string;
+  categories?: string[];
+  business_hours?: {
+    [key: string]: string[]; // exapmle "mon": ["09:00-17:00"]
+  } | null;
+}
+
+export interface locationDataDetailsType extends locationDataType {
+  status: string;
+  created_at: string;
+  updated_at: string;
+  id: number;
+}
+export interface createLocationResponse {
+  status?: string;
+  message: string;
+  location?: locationDataType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface getLocationsResponse {
+  message?: string;
+  data?: locationDataDetailsType[];
+}
+
+export interface getSingleLocationResponse {
+  message?: string;
+  data?: locationDataDetailsType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface updateLocationResponse {
+  message?: string;
+  data?: locationDataDetailsType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface bulkCreateLocationPayload {
+  locations: locationDataType[];
+}
+
+export interface bulkCreateLocationResponse {
+  status?: string;
+  message: string;
+  data?: {
+    imported: number;
+  };
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface deleteBulkLocationsPayload {
+  ids: number[];
+}
+
+export interface deleteBulkLocationsResponse {
+  status?: string;
+  message?: string;
+  data?: {
+    deleted: number;
+  };
+  errors?: {
+    [key: string]: string[];
+  };
 }

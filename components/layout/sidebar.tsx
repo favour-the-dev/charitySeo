@@ -13,6 +13,7 @@ import {
   Bot,
   Users,
   Crown,
+  MapPin,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -35,6 +36,11 @@ const sidebarItems = [
     title: "Analytics",
     href: "/analytics",
     icon: BarChart3,
+  },
+  {
+    title: "Locations",
+    href: "/locations",
+    icon: MapPin,
   },
   {
     title: "Integrations",

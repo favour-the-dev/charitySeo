@@ -3,6 +3,8 @@ import { getCookie } from "cookies-next/client";
 import {
   getConnectedFacebookPagesResponse,
   saveFacbookCredentialsPayload,
+  saveFacebookPagesResponse,
+  getUserIntegrationsResponse,
 } from "@/types/types";
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
 
@@ -55,7 +57,9 @@ export default class IntegrationService {
     }
   }
 
-  static async saveFacebookPages(payload: saveFacbookCredentialsPayload) {
+  static async saveFacebookPages(
+    payload: saveFacbookCredentialsPayload
+  ): Promise<saveFacebookPagesResponse> {
     try {
       const { token } = this.getAuthToken();
       const res = await axios.post(
@@ -67,7 +71,23 @@ export default class IntegrationService {
           },
         }
       );
-      const data = res.data;
+      const data: saveFacebookPagesResponse = res.data;
+      return data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  static async getUserIntegrations(): Promise<getUserIntegrationsResponse> {
+    try {
+      const { token } = this.getAuthToken();
+      const res = await axios.get(`${baseUrl}/user/integrations`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data: getUserIntegrationsResponse = res.data;
       return data;
     } catch (error) {
       console.error(error);

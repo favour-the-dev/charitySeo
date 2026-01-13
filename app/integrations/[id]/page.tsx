@@ -15,11 +15,13 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { integrations } from "@/lib/integrations";
 import {
-  useIntegrationsStore,
   ConnectedAccount,
-} from "@/lib/integrations-store";
-import { useWorkspaceStore } from "@/lib/workspace-store";
+  facebookPage,
+  facebookDataType,
+  saveFacbookCredentialsPayload,
+} from "@/types/types";
 import IntegrationService from "@/services/integrations";
+import { useWorkspaceStore } from "@/lib/workspace-store";
 import {
   ArrowLeft,
   Plus,
@@ -30,81 +32,107 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { nanoid } from "nanoid";
+import { useSearchParams } from "next/navigation";
+import { SaveConnectedAccountsModal } from "@/components/integrations/save-connected-accounts-modal";
 
 export default function IntegrationDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const id = params.id as string;
+  const action = searchParams.get("action");
+  const workspaceIdParam = searchParams.get("workspace_id");
+  // const { workspace } = useWorkspaceStore();
 
   const integration = integrations.find((i) => i.id === id);
-  const { connectedAccounts, addAccount, toggleAccountActive, removeAccount } =
-    useIntegrationsStore();
-  const { activeWorkspaceId } = useWorkspaceStore();
 
-  const [fetchedAccounts, setFetchedAccounts] = useState<ConnectedAccount[]>(
-    []
-  );
+  const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [modalWorkspaceId, setModalWorkspaceId] = useState<number | null>(null);
 
-  // Combine store accounts (mocks/manual) with fetched API accounts
-  // We prioritize fetched accounts for Facebook if available.
-  const displayAccounts =
-    id === "facebook" ? fetchedAccounts : connectedAccounts[id] || [];
+  useEffect(() => {
+    if (id === "facebook" && action === "save_pages" && workspaceIdParam) {
+      setModalWorkspaceId(parseInt(workspaceIdParam));
+      setShowSaveModal(true);
+      // Clean up the URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [id, action, workspaceIdParam]);
+
+  useEffect(() => {
+    fetchIntegrations();
+  }, [id]);
+
+  const fetchIntegrations = async () => {
+    if (id === "facebook") {
+      setLoadingAccounts(true);
+      try {
+        const response = await IntegrationService.getUserIntegrations();
+        if (response.facebook_data) {
+          const mappedAccounts: ConnectedAccount[] = response.facebook_data.map(
+            (fb) => ({
+              id: fb.id.toString(),
+              name: fb.metadata.name,
+              email: undefined, // Not typically active for pages in this context
+              active: fb.is_active,
+              dateConnected: fb.created_at,
+              platformId: fb.metadata.page_id,
+            })
+          );
+          setAccounts(mappedAccounts);
+        } else {
+          setAccounts([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user integrations:", error);
+        toast.error("Could not load connected accounts");
+      } finally {
+        setLoadingAccounts(false);
+      }
+    } else if (id === "google-business") {
+      // Keep existing mock logic for google-business for now, or clear it if supposed to be real.
+      // Preserving original mock logic initialization
+      setAccounts([
+        {
+          id: "acc_1",
+          name: "Localmator HQ",
+          email: "support@localmator.com",
+          active: true,
+          dateConnected: new Date().toISOString(),
+          platformId: "loc_12345",
+        },
+      ]);
+    }
+  };
+
+  const displayAccounts = accounts;
 
   const [isConnecting, setIsConnecting] = useState(false);
 
-  useEffect(() => {
-    // Only fetch if it's Facebook.
-    // NOTE: We assume this endpoint returns "Saved" pages when called here,
-    // vs "Candidate" pages when called in the selection flow.
-    if (id === "facebook" && activeWorkspaceId) {
-      fetchFacebookPages();
-    }
-  }, [id, activeWorkspaceId]);
+  const addLocalAccount = (
+    accountData: Omit<ConnectedAccount, "id" | "dateConnected" | "active">
+  ) => {
+    const newAccount: ConnectedAccount = {
+      id: nanoid(),
+      dateConnected: new Date().toISOString(),
+      active: true,
+      ...accountData,
+    };
+    setAccounts((prev) => [...prev, newAccount]);
+  };
 
-  const fetchFacebookPages = async () => {
-    if (!activeWorkspaceId) return;
-    setLoadingAccounts(true);
-    try {
-      const response = await IntegrationService.getConnectedFacebookPages(
-        activeWorkspaceId
-      );
+  const toggleAccountActive = (accountId: string) => {
+    setAccounts((prev) =>
+      prev.map((acc) =>
+        acc.id === accountId ? { ...acc, active: !acc.active } : acc
+      )
+    );
+  };
 
-      console.log("Facebook pages response:", response);
-
-      let pagesList: any[] = [];
-      if (Array.isArray(response)) {
-        pagesList = response;
-      } else if (
-        response &&
-        "pages" in response &&
-        Array.isArray(response.pages)
-      ) {
-        pagesList = response.pages;
-      } else if (
-        response &&
-        "data" in response &&
-        Array.isArray((response as any).data)
-      ) {
-        pagesList = (response as any).data;
-      }
-
-      const mappedAccounts: ConnectedAccount[] = pagesList.map((page) => ({
-        id: page.id || nanoid(),
-        name: page.name || "Unknown Page",
-        email: page.category || "No Category", // displaying category as subtitle
-        active: true,
-        dateConnected: new Date().toISOString(), // We might not have this from API, so use current or fake
-        platformId: page.id,
-      }));
-
-      setFetchedAccounts(mappedAccounts);
-    } catch (error) {
-      console.error("Failed to fetch facebook pages", error);
-      // toast.error("Failed to fetch connected Facebook pages");
-    } finally {
-      setLoadingAccounts(false);
-    }
+  const removeAccount = (accountId: string) => {
+    setAccounts((prev) => prev.filter((acc) => acc.id !== accountId));
   };
 
   if (!integration) {
@@ -133,7 +161,7 @@ export default function IntegrationDetailPage() {
         }
       } catch (error) {
         console.error("Facebook connect error:", error);
-        toast.error("Failed to initiate Facebook connection");
+        toast.error(`Failed to initiate Facebook connection: ${error}`);
         setIsConnecting(false);
         return;
       }
@@ -146,8 +174,7 @@ export default function IntegrationDetailPage() {
         email: `user_${nanoid(4)}@example.com`,
         platformId: `pid_${nanoid(8)}`,
       };
-
-      addAccount(id, mockAccount);
+      addLocalAccount(mockAccount);
       setIsConnecting(false);
       toast.success(`Successfully connected to ${integration.name}`);
     }, 2000);
@@ -305,7 +332,7 @@ export default function IntegrationDetailPage() {
                         <Switch
                           checked={account.active}
                           onCheckedChange={() =>
-                            toggleAccountActive(id, account.id)
+                            toggleAccountActive(account.id)
                           }
                         />
                       </div>
@@ -319,7 +346,7 @@ export default function IntegrationDetailPage() {
                               "Are you sure you want to remove this account?"
                             )
                           ) {
-                            removeAccount(id, account.id);
+                            removeAccount(account.id);
                             toast.success("Account removed");
                           }
                         }}
@@ -334,6 +361,14 @@ export default function IntegrationDetailPage() {
           )}
         </div>
       </div>
+      {modalWorkspaceId && (
+        <SaveConnectedAccountsModal
+          workspaceId={modalWorkspaceId}
+          open={showSaveModal}
+          onOpenChange={setShowSaveModal}
+          onSaved={fetchIntegrations}
+        />
+      )}
     </DashboardLayout>
   );
 }
