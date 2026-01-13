@@ -8,7 +8,7 @@ function FacebookCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspace_id");
-
+  // https://app.localmator.com/integrations/facebook/select?workspace_id=12#_=_
   useEffect(() => {
     if (workspaceId) {
       router.push(
