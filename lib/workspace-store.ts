@@ -141,15 +141,16 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   setActiveWorkspace: async (id) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, isFetching: true, error: null });
     try {
       await WorkspaceService.setActive(id);
       set({ activeWorkspaceId: id });
+      // Reload page to ensure all data is fresh for the new workspace
+      window.location.reload();
     } catch (error) {
       console.error("Error setting active workspace:", error);
       set({ error: (error as Error).message });
-    } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, isFetching: false });
     }
   },
 

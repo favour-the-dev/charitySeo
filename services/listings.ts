@@ -124,7 +124,7 @@ export default class ListingService {
     try {
       const { token } = this.getAuthToken();
       const res = await axios.post(
-        `${rootbaseUrl}/loactions/listings/sync-all`,
+        `${rootbaseUrl}/locations/listings/sync-all`,
         payload,
         {
           headers: {

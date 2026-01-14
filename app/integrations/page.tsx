@@ -15,16 +15,28 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { SyncAllModal } from "@/components/integrations/sync-all-modal";
 
 export default function IntegrationsPage() {
+  const [showSyncAllModal, setShowSyncAllModal] = useState(false);
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Integrations</h2>
-          <p className="text-muted-foreground">
-            Connect your review platforms to centralize feedback management.
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Integrations</h2>
+            <p className="text-muted-foreground">
+              Connect your review platforms to centralize feedback management.
+            </p>
+          </div>
+          <Button onClick={() => setShowSyncAllModal(true)}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Sync All
+          </Button>
         </div>
 
         <Tabs defaultValue="authorized" className="w-full">
@@ -112,6 +124,10 @@ export default function IntegrationsPage() {
           </TabsContent>
         </Tabs>
       </div>
+      <SyncAllModal
+        open={showSyncAllModal}
+        onOpenChange={setShowSyncAllModal}
+      />
     </DashboardLayout>
   );
 }
