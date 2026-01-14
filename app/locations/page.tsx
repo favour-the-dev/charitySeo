@@ -3,8 +3,11 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import LocationsTable from "@/components/locations/locations-table";
 import { LocationsStats } from "@/components/locations/locations-stats";
+import { ListingsStats } from "@/components/locations/listings-stats";
+import ListingsTable from "@/components/locations/listings-table";
 import { useState, useEffect } from "react";
 import LocationService from "@/services/locations";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Dashboard() {
   const [totalLocations, setTotalLocations] = useState(0);
@@ -34,9 +37,22 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <LocationsStats totalLocations={totalLocations} />
+        <Tabs defaultValue="locations" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-4">
+            <TabsTrigger value="locations">Locations</TabsTrigger>
+            <TabsTrigger value="listings">Listings</TabsTrigger>
+          </TabsList>
 
-        <LocationsTable />
+          <TabsContent value="locations" className="space-y-6">
+            <LocationsStats totalLocations={totalLocations} />
+            <LocationsTable />
+          </TabsContent>
+
+          <TabsContent value="listings" className="space-y-6">
+            <ListingsStats />
+            <ListingsTable />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

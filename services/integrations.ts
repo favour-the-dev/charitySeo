@@ -5,7 +5,10 @@ import {
   saveFacbookCredentialsPayload,
   saveFacebookPagesResponse,
   getUserIntegrationsResponse,
+  integrationStatusChangePayload,
+  integrationStatusChangeResponse,
 } from "@/types/types";
+
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 export default class IntegrationService {
@@ -91,6 +94,24 @@ export default class IntegrationService {
       return data;
     } catch (error) {
       console.error(error);
+      throw error;
+    }
+  }
+
+  static async changeIntegrationStatus(
+    payload: integrationStatusChangePayload
+  ): Promise<integrationStatusChangeResponse> {
+    try {
+      const { token } = this.getAuthToken();
+      const res = await axios.post(`${baseUrl}/activate/integration`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data: integrationStatusChangeResponse = res.data;
+      return data;
+    } catch (error) {
+      console.error("Error changing integration status:", error);
       throw error;
     }
   }

@@ -30,8 +30,11 @@ import {
   Pencil,
   MapPin,
   Star,
+  Facebook,
+  Globe,
 } from "lucide-react";
 import LocationService from "@/services/locations";
+import ListingService from "@/services/listings";
 import { locationDataDetailsType } from "@/types/types";
 import { toast } from "react-hot-toast";
 import { AddLocationModal } from "./create-location-modal";
@@ -42,6 +45,7 @@ import Image from "next/image";
 
 export default function LocationsTable() {
   const [locations, setLocations] = useState<locationDataDetailsType[]>([]);
+  const [connections, setConnections] = useState<Record<number, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocations, setSelectedLocations] = useState<number[]>([]);
@@ -59,11 +63,29 @@ export default function LocationsTable() {
   const fetchLocations = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await LocationService.getLocations();
-      if (response.data) {
-        setLocations(response.data);
+      const [locResponse, listResponse] = await Promise.all([
+        LocationService.getLocations(),
+        ListingService.getAllListings(),
+      ]);
+
+      if (locResponse.data) {
+        setLocations(locResponse.data);
       } else {
         setLocations([]);
+      }
+
+      if (listResponse.data) {
+        const connMap: Record<number, string[]> = {};
+        listResponse.data.forEach((listing) => {
+          const locId = listing.location_id;
+          if (!connMap[locId]) connMap[locId] = [];
+          // Avoid duplicates
+          const platform = listing.platform.toLowerCase();
+          if (!connMap[locId].includes(platform)) {
+            connMap[locId].push(platform);
+          }
+        });
+        setConnections(connMap);
       }
     } catch (error) {
       console.error(error);
@@ -252,23 +274,28 @@ export default function LocationsTable() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {/* Placeholder for connections */}
                     <div className="flex -space-x-2">
-                      <div
-                        className="relative h-8 w-8 rounded-full border bg-background flex items-center justify-center p-1.5"
-                        title="Google"
-                      >
-                        <Image
-                          src="/authorized/Google.png"
-                          alt="G"
-                          width={20}
-                          height={20}
-                          className="object-contain"
-                          onError={(e: any) =>
-                            (e.target.style.display = "none")
-                          }
-                        />
-                      </div>
+                      {connections[location.id]?.map((platform) => (
+                        <div
+                          key={platform}
+                          className="relative h-8 w-8 rounded-full border bg-background flex items-center justify-center p-1.5 ring-2 ring-background z-10"
+                          title={platform}
+                        >
+                          {platform.toLowerCase().includes("facebook") ? (
+                            <Facebook className="h-5 w-5 text-blue-600" />
+                          ) : platform.toLowerCase().includes("google") ? (
+                            <Globe className="h-5 w-5 text-green-600" />
+                          ) : (
+                            <MapPin className="h-5 w-5 text-gray-500" />
+                          )}
+                        </div>
+                      ))}
+                      {(!connections[location.id] ||
+                        connections[location.id].length === 0) && (
+                        <span className="text-xs text-muted-foreground italic">
+                          None
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>

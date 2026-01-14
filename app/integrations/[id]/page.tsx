@@ -34,6 +34,7 @@ import { toast } from "react-hot-toast";
 import { nanoid } from "nanoid";
 import { useSearchParams } from "next/navigation";
 import { SaveConnectedAccountsModal } from "@/components/integrations/save-connected-accounts-modal";
+import { SyncLocationModal } from "@/components/integrations/sync-location-modal";
 
 export default function IntegrationDetailPage() {
   const params = useParams();
@@ -50,6 +51,11 @@ export default function IntegrationDetailPage() {
   const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [modalWorkspaceId, setModalWorkspaceId] = useState<number | null>(null);
+
+  // Sync Modal State
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [syncTargetAccount, setSyncTargetAccount] =
+    useState<ConnectedAccount | null>(null);
 
   useEffect(() => {
     if (id === "facebook" && action === "save_pages" && workspaceIdParam) {
@@ -123,12 +129,33 @@ export default function IntegrationDetailPage() {
     setAccounts((prev) => [...prev, newAccount]);
   };
 
-  const toggleAccountActive = (accountId: string) => {
-    setAccounts((prev) =>
-      prev.map((acc) =>
-        acc.id === accountId ? { ...acc, active: !acc.active } : acc
-      )
-    );
+  const toggleAccountActive = async (accountId: string) => {
+    // Check if it's a numeric ID (real backend ID)
+    const isRealId = !isNaN(Number(accountId));
+
+    if (isRealId) {
+      try {
+        const response = await IntegrationService.changeIntegrationStatus({
+          integration_id: parseInt(accountId),
+        });
+
+        setAccounts((prev) =>
+          prev.map((acc) =>
+            acc.id === accountId ? { ...acc, active: response.is_active } : acc
+          )
+        );
+        toast.success(response.message);
+      } catch (error) {
+        console.error("Error toggling status:", error);
+        toast.error("Failed to update status");
+      }
+    } else {
+      setAccounts((prev) =>
+        prev.map((acc) =>
+          acc.id === accountId ? { ...acc, active: !acc.active } : acc
+        )
+      );
+    }
   };
 
   const removeAccount = (accountId: string) => {
@@ -336,6 +363,21 @@ export default function IntegrationDetailPage() {
                           }
                         />
                       </div>
+
+                      {/* Sync Button */}
+                      {account.active && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSyncTargetAccount(account);
+                            setShowSyncModal(true);
+                          }}
+                        >
+                          Sync with Location
+                        </Button>
+                      )}
+
                       <Button
                         variant="ghost"
                         size="icon"
@@ -367,6 +409,21 @@ export default function IntegrationDetailPage() {
           open={showSaveModal}
           onOpenChange={setShowSaveModal}
           onSaved={fetchIntegrations}
+        />
+      )}
+
+      {syncTargetAccount && (
+        <SyncLocationModal
+          open={showSyncModal}
+          onOpenChange={setShowSyncModal}
+          integrationId={id}
+          credentialId={
+            id === "facebook" ? Number(syncTargetAccount.id) : undefined
+          }
+          credentialName={syncTargetAccount.name}
+          onSuccess={() => {
+            // Optional: refresh listings or trigger sync status update
+          }}
         />
       )}
     </DashboardLayout>

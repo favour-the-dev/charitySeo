@@ -487,6 +487,15 @@ export interface getUserIntegrationsResponse {
   };
 }
 
+export interface integrationStatusChangePayload {
+  integration_id: number;
+}
+
+export interface integrationStatusChangeResponse {
+  message: string;
+  is_active: boolean;
+}
+
 // user location types
 export interface locationDataType {
   name: string;
@@ -572,3 +581,125 @@ export interface deleteBulkLocationsResponse {
     [key: string]: string[];
   };
 }
+
+// listings types
+export interface listingDataType {
+  id: number;
+  location_id: number;
+  platform: string;
+  externalId: string;
+  status: string;
+  name: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  position: string | null;
+  postal_code: string | null;
+  country: string | null;
+  phone: string | null;
+  website: string;
+  categories: { id: string; name: string }[];
+  business_hours: string[] | null;
+  description: string;
+  latitude: number | null;
+  longitude: number | null;
+  attributes: {
+    fan_count: number;
+    rating_count: number;
+    followers_count: number;
+    overall_star_rating: number;
+    verification_status: string;
+  };
+  discrepancies: { [key: string]: { local: string; platform: string } }[];
+  has_discrepancies: boolean;
+  last_synced_at: string | null;
+  last_published_at: string | null;
+  error_message: string | null;
+  location: locationDataDetailsType;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface getAllListingsResponse {
+  message?: string;
+  data?: listingDataType[];
+}
+
+export interface getListingsStatsResponse {
+  data?: {
+    total_listings: number;
+    by_platform: {
+      facebook: number;
+      google: number;
+      bing: number;
+    };
+    by_status: {
+      pending: number;
+      active: number;
+      synced: number;
+      error: number;
+    };
+    with_discrepancies: number;
+    recentyly_synced: number;
+  };
+}
+
+export interface getSingleListingResponse {
+  message: string;
+  data?: listingDataType;
+}
+
+export interface syncListByLocationPayload {
+  location_id: number; // id of an activated integration of that platfrom e.g facebook
+  platforms: string;
+}
+
+export interface syncListByLocationResponse {
+  message?: string;
+  data?: listingDataType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface syncFacebookListingsPayload {
+  location_id: number; // location Id
+  credential_id: number; // id of svaed facebook page
+}
+
+export interface syncFacebookListingsResponse {
+  message?: string;
+  listing?: listingDataType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface syncAllInWorkspacePayload {
+  location_id: number;
+}
+export interface syncAllInWorkspaceResponse {
+  message?: string;
+  data?: {
+    synced_count: number;
+    platforms: string[]; // e.g facebook
+  };
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+// export interface syncAllIntegrationsPayload {
+//   location_id: number;
+// }
+
+// export interface syncAllIntegrationsResponse {
+//   message?: string;
+//   data?: {
+//     synced_count: number;
+//     platforms: string[]; // e.g facebook
+//   };
+//   errors?: {
+//     [key: string]: string[];
+//   };
+// }
