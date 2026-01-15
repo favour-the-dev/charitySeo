@@ -32,6 +32,7 @@ import {
   Star,
   Facebook,
   Globe,
+  RefreshCw,
 } from "lucide-react";
 import LocationService from "@/services/locations";
 import ListingService from "@/services/listings";
@@ -40,6 +41,7 @@ import { toast } from "react-hot-toast";
 import { AddLocationModal } from "./create-location-modal";
 import { EditLocationModal } from "./edit-location-modal";
 import { ViewLocationModal } from "./view-location-modal";
+import { SyncLocationModal } from "./sync-location-modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import Image from "next/image";
 
@@ -56,6 +58,7 @@ export default function LocationsTable() {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [isSyncOpen, setIsSyncOpen] = useState(false);
 
   const [currentLocation, setCurrentLocation] =
     useState<locationDataDetailsType | null>(null);
@@ -321,6 +324,15 @@ export default function LocationsTable() {
                         <DropdownMenuItem
                           onClick={() => {
                             setCurrentLocation(location);
+                            setIsSyncOpen(true);
+                          }}
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Sync with Integration
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setCurrentLocation(location);
                             setIsEditOpen(true);
                           }}
                         >
@@ -374,6 +386,11 @@ export default function LocationsTable() {
             location={currentLocation}
             open={isViewOpen}
             onOpenChange={setIsViewOpen}
+          />
+          <SyncLocationModal
+            isOpen={isSyncOpen}
+            onClose={() => setIsSyncOpen(false)}
+            location={currentLocation}
           />
           <ConfirmDialog
             open={isDeleteOpen}

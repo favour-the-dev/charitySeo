@@ -40,10 +40,10 @@ export default function PrivacyPolicyPage() {
                 1. Introduction
               </h2>
               <p className="leading-7">
-                At NETSACH TECH LTD, we take your privacy seriously. This
+                At CATEX TECHNOLOGY, we take your privacy seriously. This
                 Privacy Policy applies to our website
                 https://app.localmator.com/ and our platform Localmator. This
-                policy explains how NETSACH TECH LTD collects, uses and protects
+                policy explains how CATEX TECHNOLOGY collects, uses and protects
                 your Information, including data that is personal to you and can
                 identify you an as individual. It also describes how you can
                 access, update and delete your personal information.
@@ -66,8 +66,8 @@ export default function PrivacyPolicyPage() {
               <div className="bg-muted p-4 rounded-lg text-sm">
                 <p className="font-medium">Attn: Privacy</p>
                 <p>Localmator</p>
-                <p>3568 Dodge Street</p>
-                <p>Omaha, NE 68131</p>
+                <p>4 Unity close adagorge</p>
+                <p>Port Harcourt 500272, Rivers</p>
               </div>
             </section>
 
@@ -116,6 +116,23 @@ export default function PrivacyPolicyPage() {
                 of age. If you feel that we have gathered data for any child
                 under 13, please contact us at support@localmator.com so we may
                 take immediate corrective action.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Google Business Profile Data
+              </h2>
+              <p className="leading-7">
+                Our platform uses the Google Business Profile API to access and
+                manage business information on behalf of businesses that
+                authorize us. This may include business profile details, posts,
+                reviews, and performance insights. We access this data only with
+                explicit permission from the business owner or authorized
+                manager and use it solely to provide Google Business Profile
+                management and insights services. We do not sell or misuse
+                Google Business Profile data and comply fully with Google API
+                Services User Data Policy.
               </p>
             </section>
 

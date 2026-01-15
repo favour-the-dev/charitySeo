@@ -10,10 +10,14 @@ import {
   bulkCreateLocationResponse,
   deleteBulkLocationsPayload,
   deleteBulkLocationsResponse,
+  publishLocationPayload,
+  publishLocationResponse,
+  publishLocationToAllPlatformsPayload,
+  publishLocationToAllPlatformsResponse,
 } from "@/types/types";
 
 const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/tenants/locations`;
-
+const rootUrl = `${process.env.NEXT_PUBLIC_API_URL}`;
 export default class LocationService {
   private static getAuthToken() {
     const token = getCookie("authToken");
@@ -141,6 +145,50 @@ export default class LocationService {
       return data;
     } catch (error) {
       console.error("Error bulk deleting locations:", error);
+      throw error;
+    }
+  }
+
+  static async publishLocation(
+    payload: publishLocationPayload
+  ): Promise<publishLocationResponse> {
+    try {
+      const { token } = this.getAuthToken();
+      const res = await axios.post(
+        `${rootUrl}/locations/listings/publish`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data: publishLocationResponse = res.data;
+      return data;
+    } catch (error) {
+      console.error("Error publishing location:", error);
+      throw error;
+    }
+  }
+
+  static async publishLocationToAllPlatforms(
+    payload: publishLocationToAllPlatformsPayload
+  ): Promise<publishLocationToAllPlatformsResponse> {
+    try {
+      const { token } = this.getAuthToken();
+      const res = await axios.post(
+        `${rootUrl}/locations/listings/publish-to-all`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data: publishLocationToAllPlatformsResponse = res.data;
+      return data;
+    } catch (error) {
+      console.error("Error publishing location to all platforms:", error);
       throw error;
     }
   }

@@ -39,10 +39,10 @@ export default function TermsOfServicePage() {
               <p className="leading-7">
                 This Terms of Service Agreement (“Agreement”) constitutes a
                 legally binding agreement made between you, whether personally
-                or on behalf of an entity (“Customer” or “you”) and NETSACH TECH
-                LTD and its affiliated companies (collectively, “Company” or
-                “we” or “us” or “our”), concerning your access to and use of the
-                Subscription Service (defined below). Supplemental terms and
+                or on behalf of an entity (“Customer” or “you”) and CATEX
+                TECHNOLOGY and its affiliated companies (collectively, “Company”
+                or “we” or “us” or “our”), concerning your access to and use of
+                the Subscription Service (defined below). Supplemental terms and
                 conditions or documents that may be posted on our Website
                 (defined below) from time to time, are hereby expressly
                 incorporated into this Agreement by reference.
@@ -743,6 +743,25 @@ export default function TermsOfServicePage() {
                   Consulting Service.
                 </li>
               </ul>
+              <h3 className="text-xl font-semibold mt-6">10. Contact Us</h3>
+              <p className="leading-7">
+                If you have any questions about these Terms of Service, please
+                contact us at:
+              </p>
+              <div className="bg-muted p-4 rounded-lg text-sm mt-4">
+                <p className="font-medium">CATEX TECHNOLOGY</p>
+                <p>4 Unity close adagorge</p>
+                <p>Port Harcourt 500272, Rivers</p>
+                <p className="mt-2">
+                  Email:{" "}
+                  <a
+                    href="mailto:support@localmator.com"
+                    className="text-primary hover:underline"
+                  >
+                    support@localmator.com
+                  </a>
+                </p>
+              </div>
             </section>
           </div>
         </div>

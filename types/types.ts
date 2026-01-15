@@ -582,6 +582,32 @@ export interface deleteBulkLocationsResponse {
   };
 }
 
+export interface publishLocationPayload {
+  location_id: number; // oid of the location
+  platforms: string[];
+  platform_credential_id: string; // id for integration
+}
+
+export interface publishLocationResponse {
+  message?: string;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface publishLocationToAllPlatformsPayload {
+  location_id: number; // oid of the location
+}
+export interface publishLocationToAllPlatformsResponse {
+  message?: string;
+  data?: {
+    published_count: number;
+    platforms: string[];
+  };
+  errors?: {
+    [key: string]: string[];
+  };
+}
 // listings types
 export interface listingDataType {
   id: number;
@@ -610,7 +636,7 @@ export interface listingDataType {
     overall_star_rating: number;
     verification_status: string;
   };
-  discrepancies: { [key: string]: { local: string; platform: string } }[];
+  discrepancies: { [key: string]: { local: string; platform: string } };
   has_discrepancies: boolean;
   last_synced_at: string | null;
   last_published_at: string | null;
