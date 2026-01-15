@@ -40,10 +40,10 @@ export default function PrivacyPolicyPage() {
                 1. Introduction
               </h2>
               <p className="leading-7">
-                At CATEX TECHNOLOGY, we take your privacy seriously. This
+                At Catex Technology, we take your privacy seriously. This
                 Privacy Policy applies to our website
                 https://app.localmator.com/ and our platform Localmator. This
-                policy explains how CATEX TECHNOLOGY collects, uses and protects
+                policy explains how Catex Technology collects, uses and protects
                 your Information, including data that is personal to you and can
                 identify you an as individual. It also describes how you can
                 access, update and delete your personal information.
@@ -66,8 +66,9 @@ export default function PrivacyPolicyPage() {
               <div className="bg-muted p-4 rounded-lg text-sm">
                 <p className="font-medium">Attn: Privacy</p>
                 <p>Localmator</p>
-                <p>4 Unity close adagorge</p>
+                <p>Address 1: 4 Unity close ada george</p>
                 <p>Port Harcourt 500272, Rivers</p>
+                <p>Address 2: 3568 Dodge Street Omaha, NE 68131</p>
               </div>
             </section>
 
@@ -327,8 +328,11 @@ export default function PrivacyPolicyPage() {
               <div className="bg-muted p-4 rounded-lg text-sm">
                 <p className="font-medium">Localmator</p>
                 <p>Attn: Data Privacy Officer</p>
-                <p>3568 Dodge Street</p>
-                <p>Omaha, NE 68131</p>
+                {/* <p>3568 Dodge Street</p>
+                <p>Omaha, NE 68131</p> */}
+                <p>Address 1: 4 Unity close ada george</p>
+                <p>Port Harcourt 500272, Rivers</p>
+                <p>Address 2: 3568 Dodge Street Omaha, NE 68131</p>
                 <div className="mt-4">
                   <p>Email: support@localmator.com</p>
                   {/* <p>Phone: [Phone Number]</p> */}

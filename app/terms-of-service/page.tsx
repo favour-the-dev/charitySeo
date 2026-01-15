@@ -749,9 +749,10 @@ export default function TermsOfServicePage() {
                 contact us at:
               </p>
               <div className="bg-muted p-4 rounded-lg text-sm mt-4">
-                <p className="font-medium">CATEX TECHNOLOGY</p>
-                <p>4 Unity close adagorge</p>
+                <p className="font-medium">Catex Technology</p>
+                <p>Address 1: 4 Unity close ada george</p>
                 <p>Port Harcourt 500272, Rivers</p>
+                <p>Address 2: 3568 Dodge Street Omaha, NE 68131</p>
                 <p className="mt-2">
                   Email:{" "}
                   <a
