@@ -6,12 +6,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { listingDataType, facebookDataType } from "@/types/types";
 import { useState, useEffect } from "react";
 import LocationService from "@/services/locations";
 import IntegrationService from "@/services/integrations";
 import { toast } from "react-hot-toast";
 import { AlertTriangle, Info, Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 interface PublishListingModalProps {
   isOpen: boolean;
@@ -29,12 +37,16 @@ export function PublishListingModal({
   const [loading, setLoading] = useState(false);
   const [fetchingCreds, setFetchingCreds] = useState(false);
   const [credentialId, setCredentialId] = useState<string | null>(null);
+  const [availableCredentials, setAvailableCredentials] = useState<
+    facebookDataType[]
+  >([]);
 
   // Identify the integration credential for this listing
   useEffect(() => {
     if (isOpen && listing) {
       const findCredential = async () => {
         setFetchingCreds(true);
+        setCredentialId(null);
         try {
           const res = await IntegrationService.getUserIntegrations();
           // Assuming we currently handle Facebook. Expand logic for other platforms as needed.
@@ -42,6 +54,7 @@ export function PublishListingModal({
             listing.platform.toLowerCase() === "facebook" &&
             res.facebook_data
           ) {
+            setAvailableCredentials(res.facebook_data);
             const matchedCred = res.facebook_data.find(
               (creds) => creds.metadata?.page_id === listing.externalId
             );
@@ -49,12 +62,12 @@ export function PublishListingModal({
             if (matchedCred) {
               setCredentialId(matchedCred.id.toString());
             } else {
-              // If not found by ID, maybe we just pick the first one or ask user?
-              // For now, if no credential found, we can't publish.
               console.warn(
                 "No matching credential found for listing external ID"
               );
             }
+          } else {
+            setAvailableCredentials([]);
           }
         } catch (error) {
           console.error("Error fetching integrations:", error);
@@ -68,12 +81,8 @@ export function PublishListingModal({
   }, [isOpen, listing]);
 
   const handlePublish = async () => {
-    // If we couldn't resolve a credential ID, we might need a fallback (e.g. user select).
-    // But for this implementation, let's assume valid state or fail.
     if (!credentialId) {
-      toast.error(
-        "Could not find connected integration credentials for this listing."
-      );
+      toast.error("Please select an integration credential to publish.");
       return;
     }
 
@@ -81,7 +90,7 @@ export function PublishListingModal({
     try {
       await LocationService.publishLocation({
         location_id: listing.location_id,
-        platforms: [listing.platform.toLowerCase()],
+        platform: listing.platform.toLowerCase(),
         platform_credential_id: credentialId,
       });
       toast.success("Listing published successfully");
@@ -116,6 +125,38 @@ export function PublishListingModal({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label>Integration Account</Label>
+            {fetchingCreds ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground h-10 px-3 border rounded-md">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Finding connected account...
+              </div>
+            ) : availableCredentials.length > 0 ? (
+              <Select
+                value={credentialId || ""}
+                onValueChange={(val) => setCredentialId(val)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCredentials.map((cred) => (
+                    <SelectItem key={cred.id} value={cred.id.toString()}>
+                      {cred.metadata?.name || "Unknown Page"} (ID:{" "}
+                      {cred.metadata?.page_id})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                No connected {listing.platform} accounts found. Please connect
+                an account in Integrations first.
+              </div>
+            )}
+          </div>
+
           {listing.has_discrepancies && (
             <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 rounded-md">
               <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
@@ -143,7 +184,12 @@ export function PublishListingModal({
           </Button>
           <Button
             onClick={handlePublish}
-            disabled={loading || fetchingCreds || !credentialId}
+            disabled={
+              loading ||
+              fetchingCreds ||
+              !credentialId ||
+              availableCredentials.length === 0
+            }
           >
             {loading ? (
               <>

@@ -584,7 +584,7 @@ export interface deleteBulkLocationsResponse {
 
 export interface publishLocationPayload {
   location_id: number; // oid of the location
-  platforms: string[];
+  platform: string;
   platform_credential_id: string; // id for integration
 }
 
