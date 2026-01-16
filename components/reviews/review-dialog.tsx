@@ -10,33 +10,52 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Review } from "@/lib/mock-data";
-import { useReviewsStore } from "@/lib/store";
+import { ReviewsDataType } from "@/types/types";
 import { toast } from "react-hot-toast";
-import { Star } from "lucide-react";
+import { Star, Loader2 } from "lucide-react";
+import ReviewService from "@/services/review";
 
 interface ReviewDialogProps {
-  review: Review | null;
+  review: ReviewsDataType | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export function ReviewDialog({
   review,
   open,
   onOpenChange,
+  onSuccess,
 }: ReviewDialogProps) {
   const [response, setResponse] = useState("");
-  const respondToReview = useReviewsStore((state) => state.respondToReview);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!review) return null;
 
-  const handleRespond = () => {
+  const handleRespond = async () => {
     if (!response.trim()) return;
-    respondToReview(review.id, response);
-    toast.success("Response sent successfully!");
-    setResponse("");
-    onOpenChange(false);
+
+    setIsSubmitting(true);
+    try {
+      await ReviewService.respondToReview({
+        review_id: review.id,
+        payload: {
+          content: response,
+          status: "public",
+          ai_generated: false,
+        },
+      });
+      toast.success("Response sent successfully!");
+      onSuccess?.();
+      setResponse("");
+      onOpenChange(false);
+    } catch (error) {
+      console.error(error);
+      toast.error(`Failed to send response: ${(error as Error).message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -45,7 +64,7 @@ export function ReviewDialog({
         <DialogHeader>
           <DialogTitle>Review Details</DialogTitle>
           <DialogDescription>
-            Review from {review.customerName} on {review.platform}
+            Review from {review.author_name} on {review.platform}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -63,17 +82,19 @@ export function ReviewDialog({
               ))}
             </div>
             <span className="text-sm text-muted-foreground">
-              {new Date(review.date).toLocaleDateString()}
+              {new Date(
+                review.published_at || review.created_at
+              ).toLocaleDateString()}
             </span>
           </div>
           <p className="text-sm">{review.content}</p>
 
-          {review.status === "responded" && review.response ? (
+          {review.response ? (
             <div className="rounded-md bg-muted p-3">
               <p className="text-xs font-semibold text-muted-foreground mb-1">
                 Your Response:
               </p>
-              <p className="text-sm">{review.response}</p>
+              <p className="text-sm">{review.response.content}</p>
             </div>
           ) : (
             <div className="grid gap-2">
@@ -90,11 +111,24 @@ export function ReviewDialog({
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
             Close
           </Button>
-          {review.status !== "responded" && (
-            <Button onClick={handleRespond}>Send Response</Button>
+          {!review.response && (
+            <Button onClick={handleRespond} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Response"
+              )}
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>

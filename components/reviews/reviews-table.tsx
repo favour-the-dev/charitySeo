@@ -10,213 +10,330 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useReviewsStore } from "@/lib/store";
-import { Review, ReviewStatus } from "@/lib/mock-data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  CheckCircle2,
+  Eye,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Star,
+  MessageSquare,
+  Facebook,
+  MapPin,
+  UploadCloud,
+} from "lucide-react";
+import { format } from "date-fns";
 import { ReviewDialog } from "./review-dialog";
-import { Star, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { ReviewsDataType } from "@/types/types";
+import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import ReviewService from "@/services/review";
+import { toast } from "react-hot-toast";
+import { EditResponseModal } from "./edit-response-modal";
 
-export function ReviewsTable() {
-  const {
-    getFilteredReviews,
-    setFilterStatus,
-    setFilterRating,
-    setSearchQuery,
-    filterStatus,
-    filterRating,
-  } = useReviewsStore();
+interface ReviewsTableProps {
+  reviews: ReviewsDataType[];
+  isLoading: boolean;
+  onRefresh?: () => void;
+}
 
-  const reviews = getFilteredReviews();
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+export function ReviewsTable({
+  reviews,
+  isLoading,
+  onRefresh,
+}: ReviewsTableProps) {
+  const [selectedReview, setSelectedReview] = useState<ReviewsDataType | null>(
+    null
+  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
-  const totalPages = Math.ceil(reviews.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentReviews = reviews.slice(startIndex, endIndex);
-
-  const handleRowClick = (review: Review) => {
-    setSelectedReview(review);
-    setDialogOpen(true);
+  const getPlatformIcon = (platform: string | undefined) => {
+    switch (platform?.toLowerCase()) {
+      case "facebook":
+        return <Facebook className="h-4 w-4 text-blue-600" />;
+      case "google":
+        return <MapPin className="h-4 w-4 text-red-500" />;
+      default:
+        return <MessageSquare className="h-4 w-4 text-gray-500" />;
+    }
   };
 
-  const getStatusColor = (status: ReviewStatus) => {
-    switch (status) {
-      case "new":
-        return "default";
-      case "responded":
-        return "secondary";
-      case "archived":
-        return "outline";
-      default:
-        return "default";
+  const handleDeleteResponse = async () => {
+    if (!selectedReview) return;
+    setIsDeleting(true);
+    try {
+      await ReviewService.deleteResponseToReview(selectedReview.id);
+      toast.success("Response deleted successfully");
+      setIsDeleteOpen(false);
+      onRefresh?.();
+    } catch (error) {
+      console.error(error);
+      toast.error(`Failed to delete response: ${(error as Error).message}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handlePublishResponse = async (review: ReviewsDataType) => {
+    if (!review.response) return;
+    setIsPublishing(true);
+    try {
+      await ReviewService.updateResponseToReview({
+        review_id: review.id,
+        payload: {
+          content: review.response.content,
+          status: "public",
+          ai_generated: !!review.response.ai_generated,
+        },
+      });
+      toast.success("Response published");
+      onRefresh?.();
+    } catch (error) {
+      console.error(error);
+      toast.error(`Failed to publish response: ${(error as Error).message}`);
+    } finally {
+      setIsPublishing(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search reviews..."
-              className="pl-8 w-full sm:w-[250px]"
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Select
-              value={filterStatus}
-              onValueChange={(val) =>
-                setFilterStatus(val as ReviewStatus | "all")
-              }
-            >
-              <SelectTrigger className="w-[140px] sm:w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="responded">Responded</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={filterRating.toString()}
-              onValueChange={(val) =>
-                setFilterRating(val === "all" ? "all" : parseInt(val))
-              }
-            >
-              <SelectTrigger className="w-[140px] sm:w-[150px]">
-                <SelectValue placeholder="Rating" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Ratings</SelectItem>
-                <SelectItem value="5">5 Stars</SelectItem>
-                <SelectItem value="4">4 Stars</SelectItem>
-                <SelectItem value="3">3 Stars</SelectItem>
-                <SelectItem value="2">2 Stars</SelectItem>
-                <SelectItem value="1">1 Star</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-md border">
+    <>
+      <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Customer</TableHead>
-              <TableHead>Rating</TableHead>
               <TableHead>Review</TableHead>
-              <TableHead className="hidden md:table-cell">Platform</TableHead>
-              <TableHead className="hidden md:table-cell">Date</TableHead>
+              <TableHead>Rating</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Published</TableHead>
+              <TableHead>Platform</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="w-17.5"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentReviews.length === 0 ? (
+            {isLoading ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading reviews...
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : reviews.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="h-24 text-center text-muted-foreground"
+                >
                   No reviews found.
                 </TableCell>
               </TableRow>
             ) : (
-              currentReviews.map((review) => (
-                <TableRow
-                  key={review.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => handleRowClick(review)}
-                >
-                  <TableCell className="font-medium">
-                    {review.customerName}
-                    {review.customerEmail && (
-                      <div className="text-xs text-muted-foreground hidden sm:block">
-                        {review.customerEmail}
+              reviews.map((review) => {
+                const hasResponse = !!review.response;
+                const isPublished =
+                  hasResponse &&
+                  ((review.response?.status || "").toLowerCase() === "public" ||
+                    !!review.response?.published_at);
+                return (
+                  <TableRow key={review.id} className="group">
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={review.author_image || ""} />
+                            <AvatarFallback>
+                              {review.author_name?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-sm">
+                            {review.author_name}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2 max-w-[320px]">
+                          {review.content}
+                        </p>
                       </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Star className="mr-1 h-4 w-4 fill-yellow-500 text-yellow-500" />
-                      {review.rating}
-                    </div>
-                  </TableCell>
-                  <TableCell className="truncate max-w-[200px] sm:max-w-[400px]">
-                    {review.content}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {review.platform}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {new Date(review.date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(review.status)}>
-                      {review.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-amber-500">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${
+                              i < Math.floor(review.rating)
+                                ? "fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {hasResponse ? (
+                        <Badge
+                          variant="default"
+                          className="bg-green-600 text-white hover:bg-green-600"
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          Responded
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Not responded</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {!hasResponse ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : isPublished ? (
+                        <Badge
+                          variant="default"
+                          className="bg-green-600 text-white hover:bg-green-600"
+                        >
+                          Published
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Not published</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getPlatformIcon(review.platform)}
+                        <span className="capitalize text-sm">
+                          {review.platform || "Direct"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {format(
+                        new Date(review.published_at || review.created_at),
+                        "MMM d, yyyy"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={isPublishing}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedReview(review);
+                              setIsDialogOpen(true);
+                            }}
+                          >
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+
+                          {!hasResponse ? (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedReview(review);
+                                setIsDialogOpen(true);
+                              }}
+                            >
+                              <MessageSquare className="mr-2 h-4 w-4" />
+                              Respond
+                            </DropdownMenuItem>
+                          ) : (
+                            <>
+                              <DropdownMenuItem
+                                disabled={isPublished || isPublishing}
+                                onClick={() => {
+                                  if (isPublished) return;
+                                  handlePublishResponse(review);
+                                }}
+                              >
+                                <UploadCloud className="mr-2 h-4 w-4" />
+                                Publish Response
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                disabled={isPublished}
+                                onClick={() => {
+                                  if (isPublished) return;
+                                  setSelectedReview(review);
+                                  setIsEditOpen(true);
+                                }}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit Response
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => {
+                                  setSelectedReview(review);
+                                  setIsDeleteOpen(true);
+                                }}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Response
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <div className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+      {selectedReview && (
+        <ReviewDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          review={selectedReview}
+          onSuccess={onRefresh}
+        />
       )}
 
-      <ReviewDialog
+      <EditResponseModal
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
         review={selectedReview}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onSuccess={onRefresh}
       />
-    </div>
+
+      <ConfirmDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title="Delete Response"
+        description="Are you sure you want to delete this response? This will remove your reply from the review."
+        onConfirm={handleDeleteResponse}
+        isLoading={isDeleting}
+        confirmText="Delete"
+        loadingText="Deleting..."
+      />
+    </>
   );
 }

@@ -204,7 +204,6 @@ export default function LocationsTable() {
               <TableHead className="w-[60px]">S/N</TableHead>
               <TableHead className="w-[100px]">Store ID</TableHead>
               <TableHead>Location</TableHead>
-              <TableHead className="w-[120px]">Reviews</TableHead>
               <TableHead className="w-[120px]">Connections</TableHead>
               <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
@@ -261,18 +260,6 @@ export default function LocationsTable() {
                       <span className="text-xs text-muted-foreground ml-4">
                         {location.state} {location.postal_code},{" "}
                         {location.country}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {/* Placeholder for reviews */}
-                    <div className="flex items-center text-amber-500 gap-1">
-                      <Star className="h-4 w-4 fill-current" />
-                      <span className="text-sm font-medium text-foreground">
-                        0.0
-                      </span>
-                      <span className="text-xs text-muted-foreground ml-1">
-                        (0)
                       </span>
                     </div>
                   </TableCell>

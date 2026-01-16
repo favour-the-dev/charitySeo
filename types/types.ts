@@ -729,3 +729,97 @@ export interface syncAllInWorkspaceResponse {
 //     [key: string]: string[];
 //   };
 // }
+
+// REVIEWS TYPES
+export interface ResposneDataType {
+  id: number;
+  content: string;
+  status: string;
+  ai_generated: boolean;
+  published_at: string;
+  user: {
+    id: number;
+    name: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
+export interface ReviewsDataType {
+  id: number;
+  platform: string;
+  external_id: string;
+  author_name: string;
+  author_image: string | null;
+  rating: number;
+  content: string;
+  published_at: string;
+  location: locationDataDetailsType;
+  response: ResposneDataType | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface syncReviewwithLocationIdResponse {
+  message?: string;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface getReviewsResponse {
+  message?: string;
+  data?: ReviewsDataType[];
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface getReviewsByIdResponse {
+  message?: string;
+  data?: ReviewsDataType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface getReviewsStatsResponse {
+  message?: string;
+  data?: {
+    total_reviews: number;
+    average_rating: number;
+    rating_distribution: number[];
+    by_platform: {
+      [key: string]: { count: number; average_rating: number }; // e.g facebook: { count: 10, average_rating: 4 }
+    };
+  };
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface respondToReviewPayload {
+  content: string;
+  status: string;
+  ai_generated: boolean;
+}
+
+export interface respondToReviewResponse {
+  message?: string;
+  data?: ResposneDataType;
+  errors?: {
+    [key: string]: string[];
+  };
+}
+
+export interface updateResponseToReviewPayload {
+  content: string;
+  status: string;
+  ai_generated: boolean;
+}
+export interface updateResponseToReviewResponse {
+  message?: string;
+  data?: ResposneDataType;
+  errors?: {
+    [key: string]: string[];
+  };
+}

@@ -32,6 +32,8 @@ import {
   UploadCloud,
   Eye,
   CheckCircle2,
+  Star,
+  MessageSquare,
 } from "lucide-react";
 import ListingService from "@/services/listings";
 import { listingDataType } from "@/types/types";
@@ -41,6 +43,7 @@ import { toast } from "react-hot-toast";
 import { ViewDiscrepancyModal } from "./view-discrepancy-modal";
 import { PublishListingModal } from "./publish-listing-modal";
 import { PublishAllModal } from "./publish-all-modal";
+import { SyncReviewsModal } from "./sync-reviews-modal";
 
 export default function ListingsTable() {
   const [listings, setListings] = useState<listingDataType[]>([]);
@@ -53,6 +56,7 @@ export default function ListingsTable() {
   const [isViewDiscrepancyOpen, setIsViewDiscrepancyOpen] = useState(false);
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   const [isPublishAllOpen, setIsPublishAllOpen] = useState(false);
+  const [isSyncReviewsOpen, setIsSyncReviewsOpen] = useState(false);
 
   const fetchListings = async () => {
     setLoading(true);
@@ -142,6 +146,7 @@ export default function ListingsTable() {
               <TableHead>Platform</TableHead>
               <TableHead>Listing Name</TableHead>
               <TableHead>Location</TableHead>
+              <TableHead>Rating</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Published</TableHead>
               <TableHead>Last Synced</TableHead>
@@ -188,6 +193,17 @@ export default function ListingsTable() {
                     </div>
                   </TableCell>
                   <TableCell>{listing.location?.name || "Unknown"}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center text-amber-500 gap-1">
+                      <Star className="h-4 w-4 fill-current" />
+                      <span className="text-sm font-medium text-foreground">
+                        {listing.attributes?.overall_star_rating || 0}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({listing.attributes?.rating_count || 0})
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={getStatusColor(listing.status) as any}>
                       {listing.status}
@@ -246,6 +262,19 @@ export default function ListingsTable() {
                           <UploadCloud className="mr-2 h-4 w-4" />
                           Publish Now
                         </DropdownMenuItem>
+                        {/* Sync Reviews CTA */}
+                        {(listing.attributes?.overall_star_rating > 0 ||
+                          listing.attributes?.rating_count > 0) && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedListing(listing);
+                              setIsSyncReviewsOpen(true);
+                            }}
+                          >
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            Sync Reviews
+                          </DropdownMenuItem>
+                        )}
                         {listing.website && (
                           <DropdownMenuItem asChild>
                             <Link
@@ -284,6 +313,11 @@ export default function ListingsTable() {
               setIsPublishOpen(false);
               setIsViewDiscrepancyOpen(true);
             }}
+          />
+          <SyncReviewsModal
+            isOpen={isSyncReviewsOpen}
+            onClose={() => setIsSyncReviewsOpen(false)}
+            listing={selectedListing}
           />
         </>
       )}

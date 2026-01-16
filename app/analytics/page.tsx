@@ -1,49 +1,138 @@
 "use client";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { AnalyticsCharts } from "@/components/analytics/analytics-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useReviewsStore } from "@/lib/store";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+import ReviewService from "@/services/review";
+import ListingService from "@/services/listings";
+import LocationService from "@/services/locations";
+import type {
+  getListingsStatsResponse,
+  getReviewsStatsResponse,
+} from "@/types/types";
+import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+type ReviewsStatsData = getReviewsStatsResponse["data"];
+type ListingsStatsData = getListingsStatsResponse["data"];
+
+function titleCase(word: string) {
+  if (!word) return word;
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
 
 export default function AnalyticsPage() {
-  const { reviews } = useReviewsStore();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reviewsStats, setReviewsStats] = useState<ReviewsStatsData | null>(
+    null
+  );
+  const [listingsStats, setListingsStats] = useState<ListingsStatsData | null>(
+    null
+  );
+  const [totalLocations, setTotalLocations] = useState(0);
 
-  // Mock data for charts since we don't have historical data in the store
-  const reviewsOverTime = [
-    { date: "Mon", reviews: 4 },
-    { date: "Tue", reviews: 7 },
-    { date: "Wed", reviews: 5 },
-    { date: "Thu", reviews: 12 },
-    { date: "Fri", reviews: 8 },
-    { date: "Sat", reviews: 15 },
-    { date: "Sun", reviews: 10 },
-  ];
+  useEffect(() => {
+    let cancelled = false;
 
-  const ratingDistribution = [
-    { name: "5 Stars", value: reviews.filter((r) => r.rating === 5).length },
-    { name: "4 Stars", value: reviews.filter((r) => r.rating === 4).length },
-    { name: "3 Stars", value: reviews.filter((r) => r.rating === 3).length },
-    { name: "2 Stars", value: reviews.filter((r) => r.rating === 2).length },
-    { name: "1 Star", value: reviews.filter((r) => r.rating === 1).length },
-  ];
+    const fetchAll = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const [reviewsRes, listingsRes, locationsRes] =
+          await Promise.allSettled([
+            ReviewService.getReviewsStats(),
+            ListingService.getListingStats(),
+            LocationService.getLocations(),
+          ]);
 
-  const sentimentData = [
-    { name: "Positive", value: 65, color: "#22c55e" },
-    { name: "Neutral", value: 25, color: "#eab308" },
-    { name: "Negative", value: 10, color: "#ef4444" },
-  ];
+        if (cancelled) return;
+
+        if (reviewsRes.status === "fulfilled") {
+          setReviewsStats(reviewsRes.value.data ?? null);
+        } else {
+          setError("Failed to load review stats");
+        }
+
+        if (listingsRes.status === "fulfilled") {
+          setListingsStats(listingsRes.value.data ?? null);
+        } else {
+          setError((prev) => prev ?? "Failed to load listing stats");
+        }
+
+        if (locationsRes.status === "fulfilled") {
+          setTotalLocations(locationsRes.value.data?.length ?? 0);
+        } else {
+          setError((prev) => prev ?? "Failed to load location stats");
+        }
+      } catch (e) {
+        if (!cancelled) setError("Failed to load analytics");
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    fetchAll();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const totalReviews = reviewsStats?.total_reviews ?? 0;
+  const averageRating = reviewsStats?.average_rating ?? 0;
+  const totalListings = listingsStats?.total_listings ?? 0;
+
+  const ratingDistribution = useMemo(() => {
+    const dist = reviewsStats?.rating_distribution;
+    if (!dist || dist.length === 0)
+      return [] as { name: string; value: number }[];
+    const normalized = dist.length === 5 ? dist : [0, 0, 0, 0, 0];
+    const desc = normalized.slice(0, 5).reverse();
+
+    return [5, 4, 3, 2, 1].map((star, idx) => ({
+      name: `${star} Stars`,
+      value: desc[idx] ?? 0,
+    }));
+  }, [reviewsStats]);
+
+  const reviewsByPlatform = useMemo(() => {
+    const byPlatform = reviewsStats?.by_platform;
+    if (!byPlatform)
+      return [] as { name: string; reviews: number; averageRating?: number }[];
+    return Object.entries(byPlatform)
+      .map(([platform, stats]) => ({
+        name: titleCase(platform),
+        reviews: stats?.count ?? 0,
+        averageRating: stats?.average_rating ?? 0,
+      }))
+      .sort((a, b) => b.reviews - a.reviews);
+  }, [reviewsStats]);
+
+  const listingsByPlatform = useMemo(() => {
+    const byPlatform = listingsStats?.by_platform;
+    if (!byPlatform)
+      return [] as { name: string; value: number; color?: string }[];
+
+    const colors: Record<string, string> = {
+      facebook: "var(--chart-1)",
+      google: "var(--chart-5)",
+      bing: "var(--chart-2)",
+    };
+
+    return Object.entries(byPlatform).map(([platform, value]) => ({
+      name: titleCase(platform),
+      value,
+      color: colors[platform],
+    }));
+  }, [listingsStats]);
+
+  const listingsByStatus = useMemo(() => {
+    const byStatus = listingsStats?.by_status;
+    if (!byStatus) return [] as { name: string; value: number }[];
+    return Object.entries(byStatus).map(([status, value]) => ({
+      name: titleCase(status),
+      value,
+    }));
+  }, [listingsStats]);
 
   return (
     <DashboardLayout>
@@ -55,180 +144,93 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-          {/* Reviews Over Time */}
-          <Card className="col-span-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
             <CardHeader>
-              <CardTitle>Review Volume (Last 7 Days)</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Reviews
+              </CardTitle>
             </CardHeader>
-            <CardContent className="pl-2">
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={reviewsOverTime}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      className="stroke-muted"
-                    />
-                    <XAxis
-                      dataKey="date"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `${value}`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)",
-                      }}
-                      itemStyle={{ color: "var(--foreground)" }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="reviews"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      dot={{ r: 4, fill: "hsl(var(--primary))" }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                ) : (
+                  totalReviews.toLocaleString()
+                )}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Across all platforms
+              </p>
             </CardContent>
           </Card>
 
-          {/* Rating Distribution */}
-          <Card className="col-span-3">
+          <Card>
             <CardHeader>
-              <CardTitle>Rating Distribution</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Average Rating
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={ratingDistribution} layout="vertical">
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      horizontal={false}
-                      className="stroke-muted"
-                    />
-                    <XAxis type="number" hide />
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      width={60}
-                    />
-                    <Tooltip
-                      cursor={{ fill: "transparent" }}
-                      contentStyle={{
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)",
-                      }}
-                      itemStyle={{ color: "var(--foreground)" }}
-                    />
-                    <Bar
-                      dataKey="value"
-                      fill="hsl(var(--primary))"
-                      radius={[0, 4, 4, 0]}
-                      barSize={32}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="text-2xl font-bold">
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                ) : (
+                  averageRating.toFixed(1)
+                )}
               </div>
+              <p className="text-xs text-muted-foreground">Tenant-wide</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">
+                Total Listings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                ) : (
+                  totalListings.toLocaleString()
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Connected listings
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">
+                Total Locations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                ) : (
+                  totalLocations.toLocaleString()
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Managed locations</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Sentiment Analysis */}
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Sentiment Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={sentimentData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {sentimentData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "var(--background)",
-                        borderColor: "var(--border)",
-                      }}
-                      itemStyle={{ color: "var(--foreground)" }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex justify-center gap-4 mt-4">
-                {sentimentData.map((item) => (
-                  <div key={item.name} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-sm text-muted-foreground">
-                      {item.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {error ? <div className="text-sm text-destructive">{error}</div> : null}
 
-          {/* Top Keywords */}
-          <Card className="col-span-2">
-            <CardHeader>
-              <CardTitle>Top Keywords</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Professional",
-                  "Fast",
-                  "Helpful",
-                  "Support",
-                  "Easy",
-                  "Recommended",
-                  "Price",
-                  "Quality",
-                  "Service",
-                  "Team",
-                ].map((keyword, i) => (
-                  <div
-                    key={keyword}
-                    className="px-3 py-1 rounded-full bg-muted text-sm font-medium"
-                    style={{ opacity: 1 - i * 0.05 }}
-                  >
-                    {keyword}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <AnalyticsCharts
+          isLoading={isLoading}
+          reviewsByPlatform={reviewsByPlatform}
+          ratingDistribution={ratingDistribution}
+          listingsByPlatform={listingsByPlatform}
+          listingsByStatus={listingsByStatus}
+        />
       </div>
     </DashboardLayout>
   );

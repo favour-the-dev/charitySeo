@@ -20,7 +20,7 @@ export default function Dashboard() {
           <h3 className="text-xl font-semibold tracking-tight">
             Recent Reviews
           </h3>
-          <ReviewsTable />
+          <ReviewsTable reviews={[]} isLoading={false} />
         </div>
       </div>
     </DashboardLayout>
