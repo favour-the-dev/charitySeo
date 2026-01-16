@@ -92,14 +92,7 @@ export function ReviewsTable({
     if (!review.response) return;
     setIsPublishing(true);
     try {
-      await ReviewService.updateResponseToReview({
-        review_id: review.id,
-        payload: {
-          content: review.response.content,
-          status: "public",
-          ai_generated: !!review.response.ai_generated,
-        },
-      });
+      await ReviewService.publishResponseToPlatform(review.id);
       toast.success("Response published");
       onRefresh?.();
     } catch (error) {

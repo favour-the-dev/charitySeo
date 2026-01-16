@@ -204,4 +204,25 @@ export default class ReviewService {
       throw error;
     }
   }
+
+  static async publishResponseToPlatform(
+    review_id: number
+  ): Promise<{ message: string }> {
+    try {
+      const { token } = this.getAuthToken();
+      const res = await axios.post(
+        `${baseUrl}/tenants/reviews/${review_id}/response/publish`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data: { message: string } = res.data;
+      return data;
+    } catch (error) {
+      console.error(`Error publishing response to platform: `, error);
+      throw error;
+    }
+  }
 }
